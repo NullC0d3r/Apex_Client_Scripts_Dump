@@ -1,0 +1,200 @@
+// "Gamematerial" "effect_name"
+
+
+ImpactTable
+{
+	FX
+	{
+			"C" "P_Armored_Leap_Impact_rock" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_Armored_Leap_Impact_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
+		"E" "P_Armored_Leap_Impact_default" // metal_titan
+
+		"F" "P_Armored_Leap_Impact_default" //flesh
+		"G" "P_Armored_Leap_Impact_default" //metalgrate, chainlink, chain
+		"H" "P_Armored_Leap_Impact_default" //alienflesh
+
+		"J" "P_Armored_Leap_Impact_dirt" //grass
+		"K" "P_Armored_Leap_Impact_mud" //Mud
+		"L" "P_Armored_Leap_Impact_default" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_Armored_Leap_Impact_default" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_Armored_Leap_Impact_default"
+		"O" "P_Armored_Leap_Impact_dirt" //Foliage
+		"P" "P_Armored_Leap_Impact_default" //Computer
+
+		"Q" "P_Armored_Leap_Impact_snow" //snow
+		"R" "P_Armored_Leap_Impact_snow" //ice
+
+		"S" "P_Armored_Leap_Impact_water" //water, slime
+		"T" "P_Armored_Leap_Impact_default" //tile
+		"U" "P_Armored_Leap_Impact_default" //glass_breakble
+
+		"V" "P_Armored_Leap_Impact_default" //Metal Vent
+		"W" "P_Armored_Leap_Impact_wood" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"Y" "P_Armored_Leap_Impact_default" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_Armored_Leap_Impact_sand"  //sand
+
+		"0" "P_Armored_Leap_Impact_dirt"
+		"1" "P_Armored_Leap_Impact_lava" //lava_flow
+		"2" "P_Armored_Leap_Impact_lava" //lava_rock_hot
+		"3" "P_Armored_Leap_Impact_dirt"
+		"4" "P_Armored_Leap_Impact_dirt"
+		"5" "P_Armored_Leap_Impact_dirt"
+		"6" "P_Armored_Leap_Impact_dirt"
+		"7" "P_Armored_Leap_Impact_dirt"
+		"8" "P_Armored_Leap_Impact_dirt"
+		"9" "P_Armored_Leap_Impact_water" //puddle
+
+		"splash" "P_Armored_Leap_Impact_water"
+		"slime_splash" "P_Armored_Leap_Impact_water"
+
+		"airburst" ""
+		"critical_hit" "P_Armored_Leap_Impact_default"
+	}
+
+	Sound
+	{
+		"C" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"D" "Survival_EvacTower_Anchor_Impact_Dirt"
+		"E" "Survival_EvacTower_Anchor_Impact_Metal"
+
+		"F" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"G" "Survival_EvacTower_Anchor_Impact_Metal"
+		"H" "Survival_EvacTower_Anchor_Impact_Metal"
+
+		"J" "Survival_EvacTower_Anchor_Impact_Grass"
+		"K" "Survival_EvacTower_Anchor_Impact_Concrete" // mud?
+		"L" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"M" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"N" "Survival_EvacTower_Anchor_Impact_Water"	// sand?
+		"O" "Survival_EvacTower_Anchor_Impact_Foliage"
+		"P" "Survival_EvacTower_Anchor_Impact_Concrete"
+
+		"Q" "Survival_EvacTower_Anchor_Impact_Concrete" //snow
+		"R" "Survival_EvacTower_Anchor_Impact_Metal" //ice
+		"S" "Survival_EvacTower_Anchor_Impact_Water"
+		"T" "Survival_EvacTower_Anchor_Impact_Tile"
+		"U" "Survival_EvacTower_Anchor_Impact_Concrete"
+
+		"V" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"W" "Survival_EvacTower_Anchor_Impact_wood"
+		"X"	"Survival_EvacTower_Anchor_Impact_Concrete"
+		"Y" "Survival_EvacTower_Anchor_Impact_Glass"
+		"Z" "Survival_EvacTower_Anchor_Impact_Sand"
+
+//		"0" "openslot"
+		"1" "Survival_EvacTower_Anchor_Impact_Water" //lava_flow
+		"2" "Survival_EvacTower_Anchor_Impact_Concrete" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_MGL_Impact_3P"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_3P"
+	}
+
+	Sound_attacker
+	{
+// Update these when custom explosions are created.
+		"C" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"D" "Survival_EvacTower_Anchor_Impact_Dirt"
+		"E" "Survival_EvacTower_Anchor_Impact_Metal"
+
+		"F" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"G" "Survival_EvacTower_Anchor_Impact_Metal"
+		"H" "Survival_EvacTower_Anchor_Impact_Metal"
+
+		"J" "Survival_EvacTower_Anchor_Impact_Grass"
+		"K" "Survival_EvacTower_Anchor_Impact_Concrete" // mud?
+		"L" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"M" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"N" "Survival_EvacTower_Anchor_Impact_Water"	// sand?
+		"O" "Survival_EvacTower_Anchor_Impact_Foliage"
+		"P" "Survival_EvacTower_Anchor_Impact_Concrete"
+
+		"Q" "Survival_EvacTower_Anchor_Impact_Concrete" //Snow
+		"R" "Survival_EvacTower_Anchor_Impact_Metal" //Ice
+		"S" "Survival_EvacTower_Anchor_Impact_Water"
+		"T" "Survival_EvacTower_Anchor_Impact_Tile"
+		"U" "Survival_EvacTower_Anchor_Impact_Concrete"
+
+		"V" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"W" "Survival_EvacTower_Anchor_Impact_wood"
+		"X"	"Survival_EvacTower_Anchor_Impact_Concrete"
+		"Y" "Survival_EvacTower_Anchor_Impact_Glass"
+		"Z" "Survival_EvacTower_Anchor_Impact_Sand"
+
+//		"0" "openslot"
+		"1" "Survival_EvacTower_Anchor_Impact_Water" //lava_flow
+		"2" "Survival_EvacTower_Anchor_Impact_Concrete" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_MGL_Impact_1P"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_1P_vs_3P"
+	}
+
+	Sound_victim
+	{
+// Update these when custom explosions are created.
+		"C" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"D" "Survival_EvacTower_Anchor_Impact_Dirt"
+		"E" "Survival_EvacTower_Anchor_Impact_Metal"
+
+		"F" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"G" "Survival_EvacTower_Anchor_Impact_Metal"
+		"H" "Survival_EvacTower_Anchor_Impact_Metal"
+
+		"J" "Survival_EvacTower_Anchor_Impact_Grass"
+		"K" "Survival_EvacTower_Anchor_Impact_Concrete" // mud?
+		"L" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"M" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"N" "Survival_EvacTower_Anchor_Impact_Water"	// sand?
+		"O" "Survival_EvacTower_Anchor_Impact_Foliage"
+		"P" "Survival_EvacTower_Anchor_Impact_Concrete"
+
+		"Q" "Survival_EvacTower_Anchor_Impact_Concrete" //snow
+		"R" "Survival_EvacTower_Anchor_Impact_Metal" //ice
+		"S" "Survival_EvacTower_Anchor_Impact_Water"
+		"T" "Survival_EvacTower_Anchor_Impact_Tile"
+		"U" "Survival_EvacTower_Anchor_Impact_Concrete"
+
+		"V" "Survival_EvacTower_Anchor_Impact_Concrete"
+		"W" "Survival_EvacTower_Anchor_Impact_wood"
+		"X"	"Survival_EvacTower_Anchor_Impact_Concrete"
+		"Y" "Survival_EvacTower_Anchor_Impact_Glass"
+		"Z" "Survival_EvacTower_Anchor_Impact_Sand"
+
+//		"0" "openslot"
+		"1" "Survival_EvacTower_Anchor_Impact_Water" //lava_flow
+		"2" "Survival_EvacTower_Anchor_Impact_Concrete" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_MGL_Impact_3P"
+		"shieldhit" "TitanShield.ARLWallSlam.BulletImpact_3P_vs_1P" // Custom for ARL so rapid-fire shieldhit explos don't get overbearing
+	}
+}

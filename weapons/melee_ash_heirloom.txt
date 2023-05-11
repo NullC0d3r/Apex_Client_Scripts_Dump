@@ -1,0 +1,38 @@
+#base "melee_pilot_emptyhanded.txt"
+
+WeaponData
+{
+
+	// General
+	"printname"   								"Melee"
+	"shortprintname"							"Melee"
+	"description" 								"Description needed"
+	"longdesc"									"Description needed"
+
+	"menu_icon"									"rui/hud/common/melee_icon"
+	"hud_icon"									"rui/hud/common/melee_icon"
+
+	// Models
+	"viewmodel"   								"mdl/Weapons/ash_heirloom/ptpov_ash_heirloom.rmdl"
+	"playermodel" 								"mdl/Weapons/ash_heirloom/w_ash_heirloom.rmdl"
+	"holstermodel"								"mdl/Props/ash_heirloom_prop/ash_heirloom_prop_holster.rmdl"
+
+	"clone_sync_to_player"                      "1"
+	"clone_anim_blending"                       "1"
+
+                    
+	"OnWeaponActivate"							"OnWeaponActivate_melee_ash_heirloom"
+	"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_ash_heirloom"
+     
+                                                                  
+                                                                     
+      
+
+	"is_heirloom"								"1"
+
+    // FX
+	"impact_effect_table"                       "melee_ash_nunchuck"
+
+	// Animation
+	"activitymodifier3P"						"nunchuck"
+}

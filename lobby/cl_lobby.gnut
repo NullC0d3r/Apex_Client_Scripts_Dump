@@ -1,0 +1,126 @@
+global function Lobby_AddLocalPlayer
+global function AddCallback_OnPlayerAddedToLobby
+global function Lobby_SetBannerSkin
+#if DEV
+global function DEV_SetLobbyBannerSkin
+#endif
+
+
+                                                                      
+const int LOBBY_BANNER_DEFAULT_SKIN_INDEX = 0
+const int LOBBY_BANNER_ARENAS_SKIN_INDEX = 1
+const int LOBBY_BANNER_CONTROL_SKIN_INDEX = 2
+const int LOBBY_BANNER_LTM_SKIN_INDEX = 3
+const int LOBBY_BANNER_FREEDM_SKIN_INDEX = 4
+
+
+struct
+{
+	array<void functionref( entity )> onPlayerAddedToLobbyCallbacks
+
+	array<entity> lobbyBanners
+	#if DEV
+		bool overrideLobbyBanner = false
+	#endif
+
+} file
+
+void function Lobby_AddLocalPlayer()
+{
+	entity player = GetLocalClientPlayer()
+	Assert( IsValid( player ) )
+
+	player.FreezeControlsOnClient()
+	player.HideCrosshairNames()
+
+	SetStandardAbilityBindingsForPilot( player )
+	RefreshPresentationType()
+
+                 
+	                                                                                        
+	                                                                    
+	                                                      
+	RunUIScript( "Lobby_EnableMinimapCoordsOnConnect", player.GetPlayerName() )
+      
+
+	foreach ( func in file.onPlayerAddedToLobbyCallbacks )
+		func( player )
+
+	CacheLobbyBannerEnt()
+}
+
+void function AddCallback_OnPlayerAddedToLobby( void functionref( entity ) onPlayerAddedToLobbyCallback )
+{
+	Assert( ! ( file.onPlayerAddedToLobbyCallbacks.contains( onPlayerAddedToLobbyCallback ) ), "Attempted to add same callback to onPlayerAddedToLobbyCallbacks twice." )
+
+	file.onPlayerAddedToLobbyCallbacks.append( onPlayerAddedToLobbyCallback )
+}
+
+void function CacheLobbyBannerEnt()
+{
+	file.lobbyBanners = GetEntArrayByScriptName( "lobby_banner" )
+	PrecacheParticleSystem( $"P_s14_HW_eye" )
+}
+
+void function Lobby_SetBannerSkin( string playlist )
+{
+	if( file.lobbyBanners.len() == 0 )
+	{
+		                                        
+		CacheLobbyBannerEnt()
+
+		if( file.lobbyBanners.len() == 0 )
+		{
+			Warning( "Lobby_SetBannerSkin - No lobby_banner entity found!" )
+			return
+		}
+	}
+
+	string playlistName = GetParty().playlistName
+
+	int skinIndex = LOBBY_BANNER_DEFAULT_SKIN_INDEX
+	if ( GetPlaylistVarBool( playlistName, "is_limited_mode", false ) )
+		skinIndex = LOBBY_BANNER_LTM_SKIN_INDEX
+                        
+                                                                                          
+                                            
+       
+                         
+	else if ( playlist != "" && GetPlaylistGamemodeByIndex( playlist, 0 ) == GAMEMODE_CONTROL )
+		skinIndex = LOBBY_BANNER_CONTROL_SKIN_INDEX
+       
+                        
+	else if ( playlist != "" && GetPlaylistGamemodeByIndex( playlist, 0 ) == GAMEMODE_FREEDM )
+		skinIndex = LOBBY_BANNER_FREEDM_SKIN_INDEX
+       
+
+	#if DEV
+		if ( file.overrideLobbyBanner )
+			return
+	#endif
+
+	Lobby_SetBannerSkinInternal ( skinIndex )
+}
+
+void function Lobby_SetBannerSkinInternal( int skinIndex )
+{
+	foreach ( lobbyBanner in file.lobbyBanners )
+	{
+		if ( IsValid(lobbyBanner) )
+			lobbyBanner.SetSkin( skinIndex )
+	}
+}
+
+#if DEV
+void function DEV_SetLobbyBannerSkin( int i )
+{
+	if ( i == -1 )
+	{
+		file.overrideLobbyBanner = false
+		return
+	}
+
+	Lobby_SetBannerSkinInternal( i )
+	file.overrideLobbyBanner = true
+}
+#endif

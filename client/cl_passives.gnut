@@ -1,0 +1,189 @@
+global function Cl_Passives_Init
+global function AddCallback_CreatePlayerPassiveRui
+global function AddCallback_DestroyPlayerPassiveRui
+
+struct
+{
+	array<void functionref( entity player )> CreatePlayerPassiveRui
+	array<void functionref( entity player )> DestroyPlayerPassiveRui
+
+                
+                 
+                
+       
+} file
+
+               
+               
+                                                                                                                                                          
+      
+
+void function Cl_Passives_Init()
+{
+	AddCallback_OnInitWeaponStatusRuis( OnInitWeaponStatusRuis_CLPassives )
+	AddCallback_PlayerClassChanged( OnPlayerClassChanged_CLPassives )
+	AddOnSpectatorTargetChangedCallback( OnSpectatorTargetChanged )
+                
+                                                                                                     
+                                                                                                     
+                                           
+       
+}
+
+void function AddCallback_CreatePlayerPassiveRui( void functionref( entity ) callbackFunc )
+{
+	file.CreatePlayerPassiveRui.append( callbackFunc )
+}
+
+void function AddCallback_DestroyPlayerPassiveRui( void functionref( entity ) callbackFunc )
+{
+	file.DestroyPlayerPassiveRui.append( callbackFunc )
+}
+
+void function OnInitWeaponStatusRuis_CLPassives( entity player )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	                            
+	foreach ( callbackFunc in file.DestroyPlayerPassiveRui )
+	{
+		callbackFunc( player )
+	}
+
+	foreach ( callbackFunc in file.CreatePlayerPassiveRui )
+	{
+		callbackFunc( player )
+	}
+}
+
+void function OnPlayerClassChanged_CLPassives( entity player )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	foreach ( callbackFunc in file.DestroyPlayerPassiveRui )
+	{
+		callbackFunc( player )
+	}
+}
+
+                                                                   
+void function OnSpectatorTargetChanged( entity observer, entity prevTarget, entity newTarget )
+{
+	if ( !IsPrivateMatch() )
+		return
+
+	if ( observer.GetTeam() != TEAM_SPECTATOR )
+		return
+
+	if( !IsValid(newTarget) )
+		return
+
+	foreach ( callbackFunc in file.DestroyPlayerPassiveRui )
+	{
+		callbackFunc( newTarget )
+	}
+}
+
+               
+                                                                                           
+                                                                                                  
+ 
+                                              
+
+                                   
+        
+
+                                 
+        
+
+                                                        
+                      
+
+                                            
+ 
+      
+
+               
+                                                             
+ 
+                                      
+                                
+                                            
+
+             
+                              
+   
+                           
+   
+  
+
+                
+                       
+              
+  
+             
+
+                                                     
+                        
+                                                                        
+   
+                   
+                   
+                   
+   
+                                                                                        
+   
+                   
+   
+
+                  
+   
+                                                              
+                                          
+                                                                                          
+                                     
+            
+                                                                                            
+                                                                                              
+                                                                                                  
+                                                                                                    
+                                                                                                        
+                                                                                                          
+
+                          
+                                                                                                                      
+                                      
+                                                                 
+                                        
+                                                                                            
+                                      
+
+                                  
+                                        
+
+                                                              
+                                               
+                                                                                  
+                                                         
+                                                            
+                                                         
+                                                                                   
+                                                                                       
+                                              
+   
+      
+   
+                                           
+   
+  
+ 
+                     
+
+               
+                                                                                                 
+ 
+                                         
+ 
+      

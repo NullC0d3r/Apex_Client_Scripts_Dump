@@ -1,0 +1,50 @@
+
+WeaponData
+{
+	"force_has_weapon_clone"						"1"
+
+    "allow_gibraltar_shield"                        "0"
+	"flyoutEnabled"									"0"
+
+    "OnWeaponActivate"								"OnWeaponActivate_weapon_melee_primary"
+    "OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_melee_primary"
+
+	"melee_angle"									"30"
+	"melee_attack_animtime"							"0"
+	"melee_damage"									"30"
+	"melee_damage_heavyarmor"						"30"
+	"melee_lunge_no_target_range"					"60"
+	"melee_lunge_target_angle"						"30"
+	"melee_lunge_target_range"						"60"
+	"melee_lunge_time"								"0.35"
+	"melee_range"									"40"
+	"melee_knockback_velocity_magnitude"			"350"
+
+	// Animation
+	"activitymodifier3P"							"unarmed"
+
+	Mods
+	{
+		proto_door_kick
+		{
+			"melee_attack_animtime"     "1.3"
+			//"melee_lunge_time"        "*3.0"
+			"melee_anim_1p_number"      "3"
+			"impulse_force"   			"20000"
+			"activitymodifier3P"		"door"
+		}
+
+               
+                              
+         
+                                                               
+                                                              
+                            
+                                                 
+                                      
+         
+          
+      
+	}
+}
+

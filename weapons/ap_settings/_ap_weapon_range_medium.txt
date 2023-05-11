@@ -1,0 +1,6 @@
+WeaponData
+{
+	ap_max_engage_range                 "100"
+	ap_optimal_range                    "26"
+	ap_zoom_allowed                     "1"
+}

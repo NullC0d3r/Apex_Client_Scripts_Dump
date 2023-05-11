@@ -1,0 +1,549 @@
+global function Sh_Survival_Heatwave_Init
+global function Sh_Heatwave_RegisterNetworking
+global function IsHeatwaveMode
+global function Heatwave_OnSunglassesPickup
+global function Heatwave_getHeatStatusColor
+global function Heatwave_getHeatStatusIcon
+global function Heatwave_getHeatStatusIconColor
+
+
+#if SERVER
+                                               
+                                        
+                                         
+#endif
+
+#if CLIENT
+global function Heatwave_CreateRui
+global function Heatwave_ServerToClient_UpdateProtected
+global function Thread_Heatwave_StartDmgFX
+#endif
+
+const string PLAYER_HEAT_REF = "Player_Heat_Int"
+const string SERVER_HEATWAVE_ACTIVE = "Server_Heatwave_Active"
+const string SERVER_HEATWAVE_TIME_REMAINING = "Heatwave_Time_Remaining"
+
+const string ITEM_SUNGLASSES_REF = "helmet_pickup_lv5_sunglasses"
+const string HEATWAVE_COLOR_CORRECTION = "materials/correction/Heatwave_suns_out.raw_hdr"
+
+const string HEWATWAVE_DMG_SFX = "Heatwaves_Circle_SunDamage_Unprotected_1P"
+const string HEWATWAVE_DMG_PROTECTED_SFX = "Heatwaves_Circle_SunDamage_Protected_1P"
+const string HEWATWAVE_START_SFX = "Heatwaves_UI_SunOut_Start"
+const string HEWATWAVE_END_SFX = "Heatwaves_UI_SunOut_Over"
+const string HEATWAVE_WARNING_SFX = "Heatwaves_UI_SunOut_Warning_5sec"
+
+const asset VFX_HEATWAVE_TAKING_DAMAGE = $"P_heatwave_heat_1p"
+const asset VFX_HEATWAVE_TAKING_DAMAGE_SUNGLASSES = $"P_heatwave_sunglasses_1p"
+
+const float OUTSIDE_STATUS_UPDATE_TICK = 0.3
+const float TRACE_DISTANCE      =  1800
+const float HEATWAVE_DAMAGE_PERCENT_SUNGLASSES = 0.01
+const float HEATWAVE_DAMAGE_PERCENT_DOWNED = 0.025
+const float HEATWAVE_SFX_WARNING_TIME = 5
+const int 	HEATWAVE_DEATHBOX_SKIN_INDEX = 2
+
+
+
+enum ePlayerHeatState
+{
+	Cold
+	Warm,
+	Hot,
+}
+
+struct
+{
+	var HeatwaveRui
+	bool IsHeatwaveActive
+	bool IsPlayerProtected
+	int heatwaveDmgFXHandle
+	int colourCorrection
+
+} file
+
+void function Sh_Survival_Heatwave_Init()
+{
+	if( !IsHeatwaveMode() )
+		return
+
+	PrecacheParticleSystem( VFX_HEATWAVE_TAKING_DAMAGE )
+	PrecacheParticleSystem( VFX_HEATWAVE_TAKING_DAMAGE_SUNGLASSES )
+
+#if CLIENT
+	AddCallback_GameStateEnter( eGameState.Playing, Heatwave_CreateRui)
+	RegisterNetVarIntChangeCallback( PLAYER_HEAT_REF, Heatwave_UpdatePlayerHeatRui)
+	file.colourCorrection = ColorCorrection_Register( HEATWAVE_COLOR_CORRECTION )
+#endif
+
+#if SERVER
+	                                                             
+	                                                       
+	                                                                  
+#endif
+
+
+}
+
+         
+bool function IsHeatwaveMode()
+{
+	return GetCurrentPlaylistVarBool( "is_heatwave_mode", false )
+}
+
+void function Sh_Heatwave_RegisterNetworking()
+{
+	if( !IsHeatwaveMode() )
+		return
+
+	RegisterNetworkedVariable( PLAYER_HEAT_REF, SNDC_PLAYER_EXCLUSIVE, SNVT_INT, ePlayerHeatState.Warm )
+	RegisterNetworkedVariable( SERVER_HEATWAVE_ACTIVE, SNDC_GLOBAL, SNVT_BOOL )
+	RegisterNetworkedVariable( SERVER_HEATWAVE_TIME_REMAINING, SNDC_GLOBAL, SNVT_TIME, 0 )
+
+	Remote_RegisterClientFunction( "Heatwave_ServerToClient_UpdateProtected", "bool" )
+}
+
+#if SERVER
+                                         
+ 
+	                            
+ 
+#endif
+
+#if CLIENT
+void function Heatwave_CreateRui()
+{
+	if ( IsValid( file.HeatwaveRui ))
+		return
+	file.HeatwaveRui = CreateFullscreenRui( $"ui/heatwave_rui.rpak", 3 )
+	RuiSetFloat( file.HeatwaveRui, "maxTimeUntillNextHeatwave", ( GetCurrentPlaylistVarFloat( "survival_heatwave_timer", 240.0 ) ))
+	RuiSetFloat( file.HeatwaveRui, "maxHeatwaveDuration", ( GetCurrentPlaylistVarFloat( "survival_heatwave_duration", 25.0 ) ))
+	thread Heatwave_UpdateRui_Thread()
+
+}
+#endif
+
+#if CLIENT
+void function Heatwave_UpdatePlayerHeatRui( entity player,int new )
+{
+	if (file.HeatwaveRui == null)
+		Heatwave_CreateRui()
+
+	RuiSetInt(file.HeatwaveRui, "playerHeat", new)
+
+	if (new == ePlayerHeatState.Hot)
+		thread Thread_Heatwave_StartDmgFX(player)
+	else
+		Heatwave_StopDmgFX(player)
+
+}
+#endif
+
+#if CLIENT
+void function Heatwave_UpdateRui_Thread()
+{
+	bool heatwaveActive = false
+	bool firstLoop = true
+
+	while ( GetGameState() < eGameState.Playing )
+		GetLocalClientPlayer().WaitSignal( "GameStateChanged" )
+
+	while (true)
+	{
+		if ( firstLoop || GetGlobalNetBool(SERVER_HEATWAVE_ACTIVE) != heatwaveActive )
+		{
+			firstLoop = false
+			heatwaveActive = GetGlobalNetBool( SERVER_HEATWAVE_ACTIVE )
+			file.IsHeatwaveActive = heatwaveActive
+			RuiSetBool( file.HeatwaveRui, "heatwaveStatus", heatwaveActive )
+			Status_UpdatePlayerUnitFrame()
+
+			if ( heatwaveActive )
+			{
+				AnnouncementMessageRight( GetLocalClientPlayer(), "#SURVIVAL_HEATWAVE_SUN_WARNING", "", <1, 1, 1>, $"rui/pilot_loadout/mods/heatwave_icon_sun_small", 3.0, "", SrgbToLinear( <1.0, 0.38, 0.04> * 1.5 ) )
+				thread Thread_Heatwave_Active_Timer()
+				EmitSoundOnEntity( GetLocalViewPlayer(), HEWATWAVE_START_SFX )
+			}
+			else
+			{
+				thread Thread_Heatwave_Cooldown_Timer()
+				EmitSoundOnEntity( GetLocalViewPlayer(), HEWATWAVE_END_SFX )
+			}
+		}
+		WaitFrame()
+	}
+}
+
+void function Thread_Heatwave_ColourCorrection( float endtime )
+{
+	thread ColorCorrection_LerpWeight( file.colourCorrection , 0, 1, 2)
+	wait(endtime)
+	thread ColorCorrection_LerpWeight( file.colourCorrection , 1, 0, 1)
+}
+
+                                                     
+void function Thread_Heatwave_Cooldown_Timer()
+{
+	float duration = GetCurrentPlaylistVarFloat( "survival_heatwave_timer", 240.0 )
+	float endTime  = GetGlobalNetTime( SERVER_HEATWAVE_TIME_REMAINING )
+	float warningTime = endTime - HEATWAVE_SFX_WARNING_TIME
+	bool warningPlayed = false
+	while ( Time() < endTime && GetGameState() <= eGameState.Playing )
+	{
+		if ( file.HeatwaveRui != null )
+			RuiSetFloat( file.HeatwaveRui, "timeUntilNextHeatwave", ( endTime - Time() ) )
+		if (Time() >= warningTime && warningPlayed == false )
+		{
+			warningPlayed = true
+			EmitSoundOnEntity( GetLocalViewPlayer(), HEATWAVE_WARNING_SFX )
+		}
+		WaitFrame()
+	}
+	warningPlayed = false
+}
+void function Thread_Heatwave_Active_Timer()
+{
+	float duration = GetCurrentPlaylistVarFloat( "survival_heatwave_duration", 25.0 )
+	float endTime  = GetGlobalNetTime( SERVER_HEATWAVE_TIME_REMAINING )
+	thread Thread_Heatwave_ColourCorrection(duration)
+	while ( Time() < endTime && GetGameState() <= eGameState.Playing)
+	{
+		if ( file.HeatwaveRui != null )
+			RuiSetFloat( file.HeatwaveRui, "heatwaveDuration", ( endTime - Time() ) )
+		WaitFrame()
+	}
+}
+void function Heatwave_ServerToClient_UpdateProtected(bool value)
+{
+	RuiSetBool( file.HeatwaveRui, "protectedStatus", value )
+	file.IsPlayerProtected = value
+	Status_UpdatePlayerUnitFrame()
+}
+
+void function Thread_Heatwave_StartDmgFX(entity player)
+{
+	entity cockpit = player.GetCockpit()
+	if ( cockpit && !IsSpectating() )
+	{
+		int damageFxID    = GetParticleSystemIndex( VFX_HEATWAVE_TAKING_DAMAGE )
+		if (Heatwave_SunglassesCheck(player))
+			damageFxID    = GetParticleSystemIndex( VFX_HEATWAVE_TAKING_DAMAGE_SUNGLASSES )
+		file.heatwaveDmgFXHandle = StartParticleEffectOnEntity( cockpit, damageFxID , FX_PATTACH_ABSORIGIN_FOLLOW, ATTACHMENTID_INVALID )
+	}
+}
+
+void function Heatwave_StopDmgFX(entity player)
+{
+	EffectStop(file.heatwaveDmgFXHandle, false, true )
+}
+
+#if CLIENT
+void function ColorCorrection_LerpWeight( int colorCorrection, float startWeight, float endWeight, float lerpTime = 0 )
+{
+	float startTime = Time()
+	float endTime = startTime + lerpTime
+	ColorCorrection_SetExclusive( colorCorrection, true )
+
+	while ( Time() <= endTime )
+	{
+		WaitFrame()
+		float weight = GraphCapped( Time(), startTime, endTime, startWeight, endWeight )
+		ColorCorrection_SetWeight( colorCorrection, weight )
+	}
+
+	ColorCorrection_SetWeight( colorCorrection, endWeight )
+}
+#endif         
+#endif
+
+vector function Heatwave_getHeatStatusColor()
+{
+	if( !IsHeatwaveMode() )
+		return <1.0, 1.0, 1.0>
+
+	if (file.IsPlayerProtected)
+		return <0.41, 0.39, 0.38>
+	else if (file.IsHeatwaveActive)
+		return <0.95, 0.09, 0.09>
+	else
+		return <0.95, 0.49, 0.22>
+
+	unreachable
+}
+
+vector function Heatwave_getHeatStatusIconColor()
+{
+	if( !IsHeatwaveMode() )
+		return <1.0, 1.0, 1.0>
+
+	if (file.IsPlayerProtected)
+		return <0.12, 0.76, 0.97>
+	else
+		return <0.99, 0.98, 0.09>
+
+	unreachable
+}
+
+asset function Heatwave_getHeatStatusIcon()
+{
+	if( !IsHeatwaveMode() )
+		return $""
+
+	if (file.IsPlayerProtected)
+		return $"rui/pilot_loadout/mods/heatwave_player_icon_face_cool"
+	else if (file.IsHeatwaveActive)
+		return $"rui/pilot_loadout/mods/heatwave_player_icon_face_damage"
+	else
+		return $"rui/pilot_loadout/mods/heatwave_player_icon_face_exposed"
+
+	unreachable
+}
+
+#if SERVER
+                           
+ 
+	                          
+	                                     
+	                             
+
+	                                        
+	                             
+	 
+		                                    
+		                                 
+	 
+ 
+#endif
+
+#if SERVER
+                                             
+ 
+	                                         
+ 
+#endif
+
+void function Heatwave_OnSunglassesPickup( entity player )
+{
+	ActivateGenericOffhand(player)
+}
+
+#if SERVER
+                                            
+ 
+	                                                       
+	 
+		                                        
+		                             
+		 
+			                                         
+			                                              
+		 
+
+		           
+	 
+ 
+#endif
+
+#if SERVER
+                                                            
+ 
+	                                                               
+	                  
+	                                                   
+	                                                    
+	                                                        
+	                                                  
+	                                              
+	                                           
+	                                               
+ 
+#endif
+
+#if SERVER
+                                                                  
+ 
+	                                                                                        
+	                                                          
+		                                                   
+ 
+#endif
+
+#if SERVER
+                                               
+ 
+		                         
+ 
+#endif
+
+#if SERVER
+                                               
+ 
+	                                                                                                                                                                      
+
+	                                              
+ 
+#endif
+
+#if SERVER
+                                                     
+ 
+	                                                                                          
+ 
+#endif
+
+#if SERVER
+                                              
+ 
+	                                                                                                                                                                                                   
+
+	                                      
+	               
+ 
+#endif
+
+#if SERVER
+                                                 
+ 
+	                                                                                                                              
+		           
+
+	            
+ 
+#endif
+
+#if SERVER
+                                                                 
+ 
+	                                                                                                            
+ 
+#endif
+
+#if SERVER
+                                        
+ 
+	                        
+ 
+#endif
+
+#if SERVER
+                                           
+ 
+	                             
+	                                                 
+ 
+#endif
+
+#if SERVER
+                               
+ 
+	                                                                                       
+
+	                                                                                                
+	                                                                                              
+	                     
+
+	                         
+
+	                          
+	 
+		                                        
+		                             
+		 
+			                                                                    
+			 
+				                                                                                                                                            
+				                                     
+				 
+					                                                         
+					                                                  
+				 
+
+				                                                                                                
+				                                            
+				 
+					                                                     
+					                                                  
+				 
+
+				    
+				 
+					                                                                                             
+					                                        
+				 
+
+				                                                                                                                                                                                                   
+				                                                          
+			 
+		 
+
+		                                    
+	 
+
+	                          
+
+ 
+#endif
+
+bool function Heatwave_SunglassesCheck(entity player)
+{
+#if SERVER
+	                                                                      
+
+	                                          
+#endif
+#if CLIENT
+	LootData currentEquipment = EquipmentSlot_GetEquippedLootDataForSlot( GetLocalClientPlayer(), "helmet" )
+
+	return currentEquipment.ref == ITEM_SUNGLASSES_REF
+#endif
+}
+
+#if SERVER
+                                    
+ 
+	                                                                               
+	                                                                                
+
+	                                              
+	 
+		 
+			                                                                     
+			               
+		 
+
+		                          
+		                                                                     
+		               
+	 
+ 
+#endif
+
+#if SERVER
+                                                       
+ 
+	                         
+		      
+
+	                                                                                   
+		      
+
+	                                                                            
+	                              
+		      
+	                                 
+
+ 
+#endif
+
+#if SERVER
+                                                                                                                                                               
+ 
+	                                                                                   
+		      
+
+	                                  
+	 
+		                                 
+	 
+ 
+#endif
+

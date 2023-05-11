@@ -1,0 +1,533 @@
+global function ShPassiveSling_Init
+global function DoesPlayerHaveWeaponSling
+global function GetPlayerSlingWeapon
+global function CanPlayerEquipLootEntToSling
+global function CanPlayerEquipWeaponRefToSling
+global function IsPlayerWeaponSlingEmpty
+global function IsPlayerHoldingSlingWeapon
+global function IsPlayerSwitchingToSlingWeapon
+
+#if SERVER
+                                          
+                               
+                                              
+                                             
+                                                           
+                                                        
+#endif
+
+#if CLIENT
+global function GetSlingPassiveRui
+global function CreateSlingPassiveRui_Internal
+global function DestroySlingPassiveRui
+global function ServerCallback_UpdateSlingWeaponIcon
+#endif
+
+global const int SLING_WEAPON_SLOT = WEAPON_INVENTORY_SLOT_PRIMARY_4
+global const string SLING_EQUIPMENT_SLOT_NAME = "sling_weapon"
+
+global const string BALLISTIC_SLING_WEAPON_EQIPPED_1P = "Ballistic_Passive_EquipToSling_1P"
+const string BALLISTIC_SLING_EQUIPPING_SLING_WEAPON_1P = "Ballistic_Passive_EquipSling_1P"
+
+struct
+{
+	#if CLIENT
+		var slingPassiveRui
+	#endif
+} file
+
+void function ShPassiveSling_Init()
+{
+	#if SERVER
+		                                                                                         
+		                                                                    
+	#endif
+
+	#if CLIENT
+		RegisterConCommandTriggeredCallback( "+scriptCommand5", AttemptWeaponSlingSwap )
+
+		AddCallback_CreatePlayerPassiveRui( CreateSlingPassiveRui_Internal )
+		AddCallback_DestroyPlayerPassiveRui( DestroySlingPassiveRui )
+	#endif
+
+	Remote_RegisterServerFunction( "ClientCallback_Sur_EquipSling" )
+	Remote_RegisterServerFunction( "ClientCallback_WeaponSwapFromSlingToPrimary" )
+	Remote_RegisterServerFunction( "ClientCallback_Sur_SlingToMainWeaponSlot", "int", INT_MIN, INT_MAX )
+
+	Remote_RegisterClientFunction( "ServerCallback_UpdateSlingWeaponIcon", "string", "bool" )
+
+	#if SERVER
+		                                                     
+	#endif
+}
+
+bool function DoesPlayerHaveWeaponSling( entity player )
+{
+	return PlayerHasPassive( player, ePassives.PAS_WEAPON_SLING )
+}
+
+entity function GetPlayerSlingWeapon( entity player )
+{
+	return player.GetNormalWeapon( SLING_WEAPON_SLOT )
+}
+
+bool function CanPlayerEquipLootEntToSling( entity player, entity lootEnt, bool doPlayerChecks = true )
+{
+	if( doPlayerChecks )
+	{
+		if ( IsBallisticUltActive( player ) && !IsPlayerWeaponSlingEmpty( player ) )
+			return false
+	}
+
+	if( !IsValid( lootEnt ) )
+		return false
+
+	if ( lootEnt.GetNetworkedClassName() != "prop_survival" )
+		return false
+
+	return CanPlayerEquipWeaponRefToSling( player,  SURVIVAL_Loot_GetLootDataByIndex( lootEnt.GetSurvivalInt() ).ref, false )
+}
+
+bool function CanPlayerEquipWeaponRefToSling( entity player, string ref, bool doPlayerChecks = true )
+{
+	if( doPlayerChecks )
+	{
+		if( IsBallisticUltActive( player ) && !IsPlayerWeaponSlingEmpty( player ) )
+			return false
+	}
+
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+
+	if( !IsValid( data ) )
+		return false
+
+	if ( data.lootType != eLootType.MAINWEAPON )
+		return false
+
+	if( data.tier >= 4 )
+		return false
+
+	if( data.tier > 1 && !IsUsingLoadoutSelectionSystem() )
+		return false
+
+	if( data.lootTags.contains( WEAPON_LOCKEDSET_MOD_WHITESET ) )
+		return false
+
+	return true
+}
+
+bool function IsPlayerWeaponSlingEmpty( entity player )
+{
+	if( IsValid( GetPlayerSlingWeapon( player ) ) )
+		return false
+
+	return true
+}
+
+bool function IsPlayerHoldingSlingWeapon( entity player )
+{
+	entity slingWeapon = GetPlayerSlingWeapon( player )
+	if( !IsValid( slingWeapon ) )
+		return false
+
+	entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+
+	return activeWeapon == slingWeapon
+}
+
+bool function IsPlayerSwitchingToSlingWeapon( entity player )
+{
+	return player.IsSwitching( eActiveInventorySlot.mainHand ) && !IsPlayerWeaponSlingEmpty( player ) && player.GetSelectedWeapon( eActiveInventorySlot.mainHand ) == GetPlayerSlingWeapon( player )
+
+}
+
+#if SERVER
+                                                                                                                                                                                           
+ 
+	                                  
+
+	                                                
+	                                                                                      
+
+	                             
+
+	                                    
+		                                                     
+
+	                                                                                 
+	                                                          
+
+	                                           
+	                            
+
+	                                                                                 
+
+	                                            
+
+	                                                                                                                      
+	                
+
+	                         
+		                                                                                                  
+
+	                                                   
+	                                                       
+		                                                                                                         
+ 
+
+                                                                                                    
+ 
+	             
+	 
+		                                                                                       
+	 
+	    
+	 
+		                                  
+		                            
+
+		                                                   
+
+		                            
+		 
+			                                                                                                            
+			                               
+			 
+				                       
+			 
+		 
+	 
+ 
+
+                                                                                                     
+ 
+	                                                                                        
+	                                        
+
+	                    
+ 
+
+                                                             
+ 
+	                                                   
+	                             
+	 
+		                                                              
+		                                                                                     
+		                                                                                             
+	 
+	    
+	 
+		                                                                                       
+		                                                                              
+		                                                                                    
+	 
+ 
+
+                                                                                 
+ 
+	                                                                                      
+		      
+
+	                                                           
+	                                                           
+
+	                                                                     
+
+	                                                                                  
+		      
+
+	                           
+	 
+		                                                                                                                                
+		                                                                                          
+	 
+	                                                                       
+
+	                                                           
+
+	                                                                          
+	                                        
+
+	                                                                
+	                                                  
+
+	                                     
+	 
+		                          
+		 
+			                                                                   
+
+			                                                  
+			                                        
+
+			                                                                    
+		 
+
+		                         
+		 
+			                                                                      
+			                                       
+
+			                                                                              
+			                                                                                   
+
+			                                           
+			                            
+
+			                                                                                 
+
+			                                            
+
+			                                                                                                        
+			                
+		 
+
+		                                                                          
+		                                        
+	 
+
+	                                                                          
+ 
+
+                                                            
+ 
+	                                                                                    
+		      
+
+	                                                                                
+	                                                                                          
+ 
+
+                                                                          
+ 
+	                                                                                                                 
+		      
+
+	                                                                                        
+ 
+
+                                                                                       
+ 
+	                          
+		      
+
+	                                                                                        
+		      
+
+	                                            
+		                                                
+ 
+
+                                                         
+ 
+	                        
+		      
+
+	                                        
+ 
+#endif         
+
+#if CLIENT
+void function AttemptWeaponSlingSwap( entity player )
+{
+	if ( !TryCharacterButtonCommonReadyChecks( player ) || !EquipmentSlot_IsValidForPlayer( SLING_EQUIPMENT_SLOT_NAME, player ) )
+		return
+
+	var slingPassiveRui = GetSlingPassiveRui()
+
+	if( IsPlayerHoldingSlingWeapon( player ) )
+	{
+		if( IsValid( player.GetNormalWeapon( player.GetLastCycleSlot() ) ) )
+			Remote_ServerCallFunction( "ClientCallback_WeaponSwapFromSlingToPrimary" )
+		return
+	}
+
+	if ( !IsPlayerWeaponSlingEmpty( player ) )
+	{
+		entity slingWeapon = GetPlayerSlingWeapon( player )
+		UpdateHudDataForMainWeapons( player, slingWeapon )
+		Remote_ServerCallFunction( "ClientCallback_Sur_EquipSling" )
+
+		if ( slingPassiveRui != null )
+		{
+			RuiSetBool( slingPassiveRui, "hasMainWeapon", true )
+			RuiSetBool( slingPassiveRui, "hasSlingWeapon", true )
+		}
+	}
+}
+
+var function GetSlingPassiveRui()
+{
+	return file.slingPassiveRui
+}
+
+void function CreateSlingPassiveRui_Internal( entity player )
+{
+	if( file.slingPassiveRui != null )
+		return
+
+	if ( DoesPlayerHaveWeaponSling( player ) )
+	{
+		file.slingPassiveRui = CreateCockpitPostFXRui( $"ui/gunzerker_tactical.rpak", HUD_Z_BASE )
+		UpdateSlingPassiveRui()
+	}
+}
+
+void function DestroySlingPassiveRui( entity player )
+{
+	if ( !DoesPlayerHaveWeaponSling( player ) )
+	{
+		if ( file.slingPassiveRui != null )
+		{
+			RuiDestroyIfAlive( file.slingPassiveRui )
+			file.slingPassiveRui = null
+		}
+	}
+}
+
+void function UpdateSlingPassiveRui()
+{
+	entity localViewPlayer = GetLocalViewPlayer()
+	if ( IsValid( localViewPlayer ) )
+	{
+		RuiSetBool( file.slingPassiveRui, "isVisible", true )
+		RuiTrackFloat( file.slingPassiveRui, "bleedoutEndTime", localViewPlayer, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "bleedoutEndTime" ) )
+		RuiTrackFloat( file.slingPassiveRui, "reviveEndTime", localViewPlayer, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "reviveEndTime" ) )
+		RuiSetImage( file.slingPassiveRui, "weaponIcon", $"" )
+		RuiSetFloat3( file.slingPassiveRui, "ammoColor", < 0.26, 0.26, 0.26 > )
+
+		entity slingWeapon = GetPlayerSlingWeapon( localViewPlayer )
+		if ( IsValid( slingWeapon ) )
+		{
+			RuiTrackFloat( file.slingPassiveRui, "stockAmmoFrac", slingWeapon, RUI_TRACK_WEAPON_REMAINING_AMMO_FRACTION )
+			RuiTrackFloat( file.slingPassiveRui, "clipAmmoFrac", slingWeapon, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
+			RuiTrackFloat( file.slingPassiveRui, "maxMagAmmo", slingWeapon, RUI_TRACK_WEAPON_CLIP_AMMO_MAX )
+			RuiTrackFloat( file.slingPassiveRui, "maxAmmo", slingWeapon, RUI_TRACK_WEAPON_AMMO_MAX )
+
+			int maxAmmoReady  = slingWeapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+			int ammoPerShot   = slingWeapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
+			int ammoMinToFire = slingWeapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )
+
+			if ( maxAmmoReady == 0 )
+				maxAmmoReady = 1
+
+			RuiTrackFloat( file.slingPassiveRui, "chargeFrac", slingWeapon, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
+			RuiTrackFloat( file.slingPassiveRui, "readyFrac", slingWeapon, RUI_TRACK_WEAPON_READY_TO_FIRE_FRACTION )
+			RuiTrackFloat( file.slingPassiveRui, "refillRate", slingWeapon, RUI_TRACK_WEAPON_AMMO_REGEN_RATE )
+			RuiSetFloat( file.slingPassiveRui, "minFireFrac", float( ammoMinToFire ) / float( maxAmmoReady ) )
+			RuiSetInt( file.slingPassiveRui, "ammoMinToFire", ammoMinToFire )
+
+			LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( slingWeapon.GetWeaponClassName() )
+			string weaponName = GetWeaponInfoFileKeyField_GlobalString( weaponData.baseWeapon, "shortprintname" )
+
+			RuiSetString( file.slingPassiveRui, "weaponName", weaponName )
+
+                         
+				WeaponRuiUpdateMastery( file.slingPassiveRui, slingWeapon, "hudIconMastered", "isMastered" )
+         
+		}
+	}
+}
+
+void function ServerCallback_UpdateSlingWeaponIcon( string weaponRef, bool usesAmmoPool )
+{
+	if ( file.slingPassiveRui != null )
+	{
+		if ( weaponRef != "" )
+		{
+			LootData data = SURVIVAL_Loot_GetLootDataByRef( weaponRef )
+			string ammoTypeRef = GetWeaponAmmoType( weaponRef )
+			asset ammoIcon = $""
+			vector ammoColor = < 1.0, 1.0, 1.0 >
+			vector weaponIconColor = < 1.0, 1.0, 1.0 >
+			vector backgroundColor =  < 0.5, 0.5, 0.5 >
+			entity player = GetLocalViewPlayer()
+			entity slingWeapon = player.GetNormalWeapon( SLING_WEAPON_SLOT  )
+
+			if( data.secondaryAmmoType != "" && IsValid( slingWeapon ))
+			{
+				ammoTypeRef = AmmoType_GetRefFromIndex( slingWeapon.GetWeaponAmmoPoolType() )
+
+				LootData ammoData = SURVIVAL_Loot_GetLootDataByRef( ammoTypeRef )
+				ammoColor = GetAmmoColorByType( ammoTypeRef )
+				ammoIcon = ammoData.hudIcon
+				backgroundColor = ammoColor
+			}
+
+			if( SURVIVAL_Loot_IsRefValid( ammoTypeRef ) && usesAmmoPool && data.secondaryAmmoType == "")
+			{
+				LootData ammoData = SURVIVAL_Loot_GetLootDataByRef( ammoTypeRef )
+				ammoIcon = ammoData.hudIcon
+				ammoColor = GetAmmoColorByType( GetWeaponAmmoType( data.ref ) )
+				backgroundColor = ammoColor
+			}
+			else if ( data.tier == eLootTier.MYTHIC )
+			{
+				ammoColor = GetAmmoColorByType( "supply_drop" )
+				ammoIcon = data.fakeAmmoIcon == $"" ? $"rui/hud/gametype_icons/survival/sur_ammo_unique" : data.fakeAmmoIcon
+				backgroundColor = ammoColor
+			}
+
+			if ( data.tier > 2 )
+			{
+				ammoColor = SrgbToLinear( <1, 0.91765, 0.15294> )
+				backgroundColor = <1, 0.91765, 0.15294>
+			}
+
+			if ( IsBallisticUltActive( player ) )
+				RuiSetBool( file.slingPassiveRui, "isInUlt", true )
+			else
+				RuiSetBool( file.slingPassiveRui, "isInUlt", false )
+
+			RuiSetImage( file.slingPassiveRui, "weaponIcon", data.hudIcon )
+			RuiSetFloat3( file.slingPassiveRui, "ammoColor", SrgbToLinear( ammoColor ) )
+			RuiSetFloat3( file.slingPassiveRui, "weaponIconColor", weaponIconColor )
+			RuiSetImage( file.slingPassiveRui, "ammoIcon", ammoIcon )
+			RuiSetFloat3( file.slingPassiveRui, "backgroundColor", backgroundColor )
+
+			if( IsValid( slingWeapon ) )
+			{
+				RuiTrackFloat( file.slingPassiveRui, "stockAmmoFrac", slingWeapon, RUI_TRACK_WEAPON_REMAINING_AMMO_FRACTION )
+				RuiTrackFloat( file.slingPassiveRui, "clipAmmoFrac", slingWeapon, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
+				RuiTrackFloat( file.slingPassiveRui, "maxMagAmmo", slingWeapon, RUI_TRACK_WEAPON_CLIP_AMMO_MAX )
+				RuiTrackFloat( file.slingPassiveRui, "maxAmmo", slingWeapon, RUI_TRACK_WEAPON_AMMO_MAX )
+
+				int maxAmmoReady  = slingWeapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+				int ammoPerShot   = slingWeapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
+				int ammoMinToFire = slingWeapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )
+
+				RuiTrackFloat( file.slingPassiveRui, "chargeFrac", slingWeapon, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
+				RuiTrackFloat( file.slingPassiveRui, "readyFrac", slingWeapon, RUI_TRACK_WEAPON_READY_TO_FIRE_FRACTION )
+				RuiTrackFloat( file.slingPassiveRui, "refillRate", slingWeapon, RUI_TRACK_WEAPON_AMMO_REGEN_RATE )
+				RuiSetInt( file.slingPassiveRui, "ammoMinToFire", ammoMinToFire )
+
+				LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( slingWeapon.GetWeaponClassName() )
+				string weaponName = GetWeaponInfoFileKeyField_GlobalString( weaponData.baseWeapon, "shortprintname" )
+
+				RuiSetString(  file.slingPassiveRui, "weaponName", weaponName )
+
+                          
+					WeaponRuiUpdateMastery( file.slingPassiveRui, slingWeapon, "hudIconMastered", "isMastered" )
+          
+			}
+		}
+		else
+		{
+			RuiSetImage( file.slingPassiveRui, "weaponIcon", $"" )
+			RuiSetFloat3( file.slingPassiveRui, "ammoColor", ( < 1.0, 1.0, 1.0 > ) )
+			RuiSetImage( file.slingPassiveRui, "ammoIcon", $"rui/hud/gametype_icons/survival/sur_ammo_blank" )
+			RuiSetFloat( file.slingPassiveRui, "imageSaturation", 0.0 )
+
+			RuiSetFloat( file.slingPassiveRui, "stockAmmoFrac", 0.0 )
+			RuiSetFloat( file.slingPassiveRui, "clipAmmoFrac", 0.0 )
+			RuiSetFloat( file.slingPassiveRui, "maxMagAmmo", 0.0 )
+			RuiSetFloat( file.slingPassiveRui, "maxAmmo", 0.0 )
+			RuiSetBool( file.slingPassiveRui, "slingEmptyAimingAtWeapon", false )
+                         
+				RuiSetBool( file.slingPassiveRui, "isMastered", false )
+         
+		}
+	}
+}
+#endif         

@@ -1,0 +1,10 @@
+WeaponData
+{
+	ap_min_burst                        "0.1"
+	ap_max_burst                        "0.1"
+	ap_rest_time_between_bursts_min     "0.2"
+	ap_rest_time_between_bursts_max     "0.5"
+	ap_min_close_range_burst            "0.1"
+    ap_max_close_range_burst            "0.1"
+    ap_max_range_for_close_burst        "500"
+}

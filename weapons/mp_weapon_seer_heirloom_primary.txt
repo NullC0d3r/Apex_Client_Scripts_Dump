@@ -1,0 +1,96 @@
+#base "mp_weapon_melee_survival.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"Cold Steel"
+	"shortprintname"								"Cold Steel"
+	"description" 									"CRYPTO_HEIRLOOM_DESCRIPTION"
+	"longdesc"										"CRYPTO_HEIRLOOM_LONGDESC"
+
+    // UI/HUD
+	"menu_icon"										"rui/menu/dpad_comms/emoji/fist"
+	"hud_icon"										"rui/menu/dpad_comms/emoji/fist"
+
+	// Models
+	"viewmodel"   								    "mdl/Weapons/seer_heirloom/ptpov_seer_heirloom.rmdl"
+	"playermodel" 								    "mdl/props/seer_heirloom/seer_heirloom_static.rmdl"
+
+	"holster_type"									"pistol"
+	"holster_offset"						    	"12 0 2"
+	"holster_angles_offset"						    "-90 10 0"  // "pitch roll yaw"
+
+                    
+	"OnWeaponActivate"								"OnWeaponActivate_weapon_seer_heirloom_primary"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_seer_heirloom_primary"
+     
+                                                                  
+                                                                        
+      
+
+    "deploy_allow_ads"                              "1"
+
+	"is_heirloom"									"1"
+
+	"dof_nearDepthStart"							"0.5"
+	"dof_nearDepthEnd"							    "6.4"
+
+	// Behavior
+	"deployfirst_time"								"2.0333"
+
+	// Animation
+	"ignore_3p_activity_mod_during_consumable"      "1"
+	"activitymodifier3P"							"fist_blades"
+
+	// Bob - Hip
+	"bob_cycle_time"                       		    "0.4"
+	"bob_max_speed"									"150"
+	"bob_vert_dist"                    		        "0.19"
+	"bob_horz_dist"                       		    "0.1"
+	"bob_pitch"										"0.2"
+	"bob_yaw"										"0.2"
+	"bob_roll"										"0.2"
+
+	// Sway - Hip
+	"sway_rotate_attach"  							"SWAY_ROTATE"
+	"sway_min_x"  									"-0.1"
+	"sway_min_y"  									"-0.1"
+	"sway_min_z"  									"-0.1"
+	"sway_max_x"  									"0.1"
+	"sway_max_y"  									"0.1"
+	"sway_max_z"  									"0.1"
+	"sway_min_pitch"  								"-1"
+	"sway_min_yaw"									"-0.1"
+	"sway_min_roll"   								"-1"
+	"sway_max_pitch"  								"1"
+	"sway_max_yaw"									"1"
+	"sway_max_roll"   								"1"
+	"sway_translate_gain" 							"0.3"
+	"sway_rotate_gain"								"0.1"
+	"sway_move_forward_translate_x"   				"-0.1"
+	"sway_move_forward_translate_z"   				"-0.5"
+	"sway_move_back_translate_x"  					"0.2"
+	"sway_move_back_translate_z"  					"-0.2"
+	"sway_move_left_translate_x"  					"1"
+	"sway_move_left_translate_y"  					"1"
+	"sway_move_left_translate_z"  					"0"
+	"sway_move_left_rotate_roll"  					"-4"
+	"sway_move_right_translate_x"  					"1"
+	"sway_move_right_translate_y" 					"1"
+	"sway_move_right_translate_z" 					"0"
+	"sway_move_right_rotate_roll" 					"4"
+	"sway_move_up_translate_z"						"-1"
+	"sway_move_down_translate_z"  					"1"
+	"sway_turn_left_rotate_yaw"   					"-2.5"
+	"sway_turn_right_rotate_yaw"  					"2.5"
+	"sway_turn_left_translate_y"  					".5"
+	"sway_turn_right_translate_y"  					"-.5"
+	"sway_turn_up_translate_z"  					".2"
+	"sway_turn_down_translate_z"  					"-.2"
+	"sway_turn_up_translate_x"  					".1"
+	"sway_turn_down_translate_x"  					"-.1"
+
+	// this is to boost the emmisive on the blades when attacks happen
+
+    "entity_uses_emissive_events"               "1"
+}

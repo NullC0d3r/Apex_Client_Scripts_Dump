@@ -1,0 +1,212 @@
+// "Gamematerial" "effect_name"
+
+
+ImpactTable
+{
+	FX
+	{
+		"A" "none" //default silent (clip)
+		"B" "none" //Bloodyflesh?
+
+		"C" "none" // Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "none" // Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "none" // metal_titan
+		"F" "none" //flesh
+		"G" "none" //metalgrate, chainlink, chain
+		"H" "none" //alienflesh
+
+		"I" "none" //player_control_clip
+
+		"J" "P_hmn_footstep_dust" //grass
+		"K" "impact_mud" //Mud
+		"L" "none" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "none" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_slime" //Slime
+		"O" "P_hmn_footstep_dust" //Foliage
+		"P" "none" //Computer
+
+		"Q" "P_hmn_footstep_snow" //Snow
+		"R" "P_hmn_footstep_snow" //ice
+
+		"S" "P_impact_water" //water, slime
+		"T" "none" //tile
+		"U" "none" //glass_breakable
+		"V" "none" //Metal Vent
+		"W" "none" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+		"X" "none" //xo_shield
+		"Y" "none" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_hmn_footstep_sand" //sand
+
+//		"0" "openslot"
+		"1" "P_hmn_footstep_lava" //lava_flow
+		"2" "P_hmn_footstep_lava" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+
+		//Hardcocded Surfacprops
+		"splash" "P_impact_water" //brush water
+		"slime_splash" "P_impact_slime"
+		"airburst" "none"  //No Surface
+		"shieldhit" "none" //Invisible armor
+		"holohit" "none" //Holopilot entity
+		"critical_hit" "none" //titan weekspots
+
+		"headshot_flesh" "none" //Human headshot
+		"headshot_mechanical" "none" //Robotic Headshot
+
+	}
+
+Sound
+
+	{
+		"C" "Catalyst_Tactical_Impact_default"
+		"D" "Catalyst_Tactical_Impact_Dirt"
+		"E" "Catalyst_Tactical_Impact_default"
+
+		"F" "Catalyst_Tactical_Impact_default"
+		"G" "Catalyst_Tactical_Impact_Metalgrate"
+		"H" "Catalyst_Tactical_Impact_default"
+
+		"J" "Catalyst_Tactical_Impact_Grass"
+		"K" "Catalyst_Tactical_Impact_Mud"
+		"L" "Catalyst_Tactical_Impact_default"
+		"M" "Catalyst_Tactical_Impact_Metal"
+		"N" "Catalyst_Tactical_Impact_default"
+		"O" "Catalyst_Tactical_Impact_default"
+		"P" "Catalyst_Tactical_Impact_default"
+
+		"Q" "Catalyst_Tactical_Impact_Snow" //snow
+		"R" "Catalyst_Tactical_Impact_Grass" //Ice
+		"S" "Catalyst_Tactical_Impact_Water"
+		"T" "Catalyst_Tactical_Impact_default"
+		"U" "Catalyst_Tactical_Impact_default"
+
+		"V" "Catalyst_Tactical_Impact_Metalgrate"
+		"W" "Catalyst_Tactical_Impact_Wood"
+		"X" "Catalyst_Tactical_Impact_default"
+		"Y" "Catalyst_Tactical_Impact_default"
+		"Z" "Catalyst_Tactical_Impact_default"
+
+//		"0" "openslot"
+		"1" "Catalyst_Tactical_Impact_default" //lava_flow
+		"2" "Catalyst_Tactical_Impact_default" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+
+		"splash" "Catalyst_Tactical_Impact_default"
+		//"slime_splash" "physics_watersplash"
+
+		"airburst" "Catalyst_Tactical_Impact_default"
+		"shieldhit" "Catalyst_Tactical_Impact_default"
+	}
+
+	Sound_attacker
+	{
+		"C" "Catalyst_Tactical_Impact_default"
+		"D" "Catalyst_Tactical_Impact_Dirt"
+		"E" "Catalyst_Tactical_Impact_default"
+
+		"F" "Catalyst_Tactical_Impact_default"
+		"G" "Catalyst_Tactical_Impact_Metalgrate"
+		"H" "Catalyst_Tactical_Impact_default"
+
+		"J" "Catalyst_Tactical_Impact_Grass"
+		"K" "Catalyst_Tactical_Impact_Mud"
+		"L" "Catalyst_Tactical_Impact_default"
+		"M" "Catalyst_Tactical_Impact_Metal"
+		"N" "Catalyst_Tactical_Impact_default"
+		"O" "Catalyst_Tactical_Impact_default"
+		"P" "Catalyst_Tactical_Impact_default"
+
+		"Q" "Catalyst_Tactical_Impact_Snow" //snow
+		"R" "Catalyst_Tactical_Impact_Grass" //ice
+		"S" "Catalyst_Tactical_Impact_Water"
+		"T" "Catalyst_Tactical_Impact_default"
+		"U" "Catalyst_Tactical_Impact_default"
+
+		"V" "Catalyst_Tactical_Impact_Metalgrate"
+		"W" "Catalyst_Tactical_Impact_Wood"
+		"X" "Catalyst_Tactical_Impact_default"
+		"Y" "Catalyst_Tactical_Impact_default"
+		"Z" "Catalyst_Tactical_Impact_default"
+
+//		"0" "openslot"
+		"1" "Catalyst_Tactical_Impact_default" //lava_flow
+		"2" "Catalyst_Tactical_Impact_default" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "Catalyst_Tactical_Impact_default"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Catalyst_Tactical_Impact_default"
+		"shieldhit" "Catalyst_Tactical_Impact_default"
+	}
+
+	Sound_victim
+	{
+		"C" "Catalyst_Tactical_Impact_default"
+		"D" "Catalyst_Tactical_Impact_Dirt"
+		"E" "Catalyst_Tactical_Impact_default"
+
+		"F" "Catalyst_Tactical_Impact_default"
+		"G" "Catalyst_Tactical_Impact_Metalgrate"
+		"H" "Catalyst_Tactical_Impact_default"
+
+		"J" "Catalyst_Tactical_Impact_Grass"
+		"K" "Catalyst_Tactical_Impact_Mud"
+		"L" "Catalyst_Tactical_Impact_default"
+		"M" "Catalyst_Tactical_Impact_Metal"
+		"N" "Catalyst_Tactical_Impact_default"
+		"O" "Catalyst_Tactical_Impact_default"
+		"P" "Catalyst_Tactical_Impact_default"
+
+		"Q" "Catalyst_Tactical_Impact_Snow" //snow
+		"R" "Catalyst_Tactical_Impact_Grass" //ice
+
+		"S" "Catalyst_Tactical_Impact_Water"
+		"T" "Catalyst_Tactical_Impact_default"
+		"U" "Catalyst_Tactical_Impact_default"
+
+		"V" "Catalyst_Tactical_Impact_Metalgrate"
+		"W" "Catalyst_Tactical_Impact_Wood"
+		"X" "Catalyst_Tactical_Impact_default"
+		"Y" "Catalyst_Tactical_Impact_default"
+		"Z" "Catalyst_Tactical_Impact_default"
+
+//		"0" "openslot"
+		"1" "Catalyst_Tactical_Impact_default" //lava_flow
+		"2" "Catalyst_Tactical_Impact_default" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "Catalyst_Tactical_Impact_default"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Catalyst_Tactical_Impact_default"
+		"shieldhit" "Catalyst_Tactical_Impact_default"
+	}
+
+}

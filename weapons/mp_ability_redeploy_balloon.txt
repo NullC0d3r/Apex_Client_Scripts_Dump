@@ -1,0 +1,128 @@
+WeaponData
+{
+	// General
+	"printname"   									"#SURVIVAL_PICKUP_REDEPLOY_BALLOON"
+	"shortprintname"								"#SURVIVAL_PICKUP_REDEPLOY_BALLOON"
+	"description" 									"#SURVIVAL_PICKUP_REDEPLOY_BALLOON_HINT"
+	"longdesc" 										"#SURVIVAL_PICKUP_REDEPLOY_BALLOON_HINT"
+
+    "menu_icon"                                     "rui/hud/evac_tower/evac_tower_loot"
+    "hud_icon"                                      "rui/hud/evac_tower/evac_tower_loot"
+
+    "readymessage"                                  "BUG IT"
+    "readyhint"                                     "BUG IT"
+
+	"weapon_type_flags"								"WPT_CONSUMABLE"
+	"weaponType"									"gadget"
+	"fire_mode"   									"automatic"
+    "is_semi_auto"									"1"
+	"is_toss_weapon"                                "0"
+	"is_clacker"                                    "1"
+	"offhand_default_inventory_slot"				"4"
+	"offhand_interupts_weapon_anims"				"1"
+    "battle_chatter_event"							"bc_evacTowerDeploy"
+
+	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_redeploy_balloon"
+	"OnWeaponActivate"							    "OnWeaponActivate_redeploy_balloon"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_redeploy_balloon"
+	"OnWeaponPrimaryAttackAnimEvent"	            "OnWeaponPrimaryAttackAnimEvent_redeploy_balloon"
+	//"OnObjectPlacementCanPlace"						"OnObjectPlacementCanPlace_redeploy_balloon"
+	//"OnCreateClientOnlyModel"						"OnCreateClientOnlyModel_redeploy_balloon"
+
+    // Models
+	"viewmodel"									    "mdl/weapons/clacker_detonator/ptpov_proximity_detonator.rmdl"
+    "playermodel" 							    	"mdl/Weapons/clacker_detonator/clacker_w.rmdl"	
+	"projectilemodel"								"mdl/titans/medium/titan_medium_battery_static.rmdl"
+
+	//Object Placement -- Maybe get this working one day
+	//"object_placer"									"1"
+	"object_placement_model"						"mdl/Robots/drone_ticky/drone_ticky.rmdl"
+	"object_placement_distance_max"					"1100"
+	//"object_placement_hill_angle_max"				"45"
+	//"object_placement_clearance_behind"			"0"
+	"object_placement_last_good_distance_max"		"5"
+	"object_placement_last_good_angle_max"			"10"
+	"object_placement_drop_to_ground_offset_max"	"500"
+	"object_placement_distance_to_ground_max"		"20"
+	//"object_placement_percent_off_ledge_max"		"0.10"
+	"object_placement_ground_penetration_max"		"100"
+	//"object_placement_use_top_trace"				"0"
+	//"object_placement_top_side_percent_pierce_max"	"0.34"
+	//"object_placement_top_distance_pierce_max"		"7.5"
+	//"object_placement_vehicle_attachment_index"		"0"
+	"object_placement_force_upright"                "1"
+
+    // Sounds
+    "sound_throw_1p"                                "Wpn_ArcTrap_Throw"
+    "sound_deploy_1p"                               "weapon_sentryfragdrone_pinpull_1p"
+    "sound_throw_3p"                                "weapon_sentryfragdrone_throw_3p"
+    "sound_deploy_3p"                               "weapon_sentryfragdrone_pinpull_3p"
+    "sound_grenade_projectile"                      ""
+    "sound_dryfire"                                 "Survival_UI_Ability_NotReady"
+
+    // Ammo
+    "ammo_clip_size"   								"1"
+    "ammo_default_total"							"1"
+    "ammo_display"									"count"
+    "ammo_min_to_fire"								"1"
+    "ammo_per_shot"									"1"
+    "ammo_stockpile_max"							"0"
+    "ammo_drains_to_empty_on_fire"					"0"
+    "ammo_no_remove_from_clip"						"0"
+    "ammo_no_remove_from_stockpile"					"0"
+
+    "offhand_switch_force_draw"						"1"
+
+    // Regen Ammo
+    "regen_ammo_refill_rate"						"0"
+    "regen_ammo_refill_start_delay"					"0.0"
+
+    // Damage
+    "damage_type" 									"none"
+    "explosion_damage_heavy_armor"					"0"
+    "damage_near_distance"							"0"
+    "damage_far_distance" 							"0"
+    "damage_near_value"   							"0"
+    "damage_far_value"								"0"
+
+    "zoom_effects"									"0"
+
+    // Rumble
+    "rumble"  										"-1"
+
+    // Behavior
+    "fire_rate"   									"10000.0"
+    "fire_duration"									"1.0"
+    "fire_anim_rate"								"1.0"
+    "holster_time"									"0.15"
+    "deploy_time" 									"0.25"
+    "lower_time"  									"0.25"
+    "raise_time"  									"0.2"
+    "allow_empty_fire"								"1" //Allowed for Gadget Slot to bypass Inventory Ammo Check
+    "reload_enabled"								"0"
+    "empty_reload_only"   							"0"
+    "allow_empty_click"   							"0"
+    "trigger_snipercam"   							"0"
+    "allow_headshots" 								"0"
+    "breaks_cloak"									"0"
+    "primary_fire_does_not_block_sprint"			"1"
+    "aimassist_disable_hipfire"						"1"
+    "aimassist_disable_ads"							"1"
+    "cooldown_type"									"ammo"
+
+
+ 	"activitymodifier1p"                            "mp_ability_redeploy_balloon" //what does this do? It's the condition to play EVAC TOWER sequences in 1p - Austin
+
+	Mods
+	{
+		survival_armor_cooldown_mod
+		{
+			"regen_ammo_refill_rate"    "*1.25"
+		}
+
+		survival_finite_ordnance
+		{
+
+		}
+	}
+}

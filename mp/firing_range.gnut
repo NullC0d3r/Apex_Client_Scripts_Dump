@@ -1,0 +1,4248 @@
+global const int TRAININGDUMMY_SHIELD_LV1_MAXHEALTH = 50
+global const int TRAININGDUMMY_SHIELD_LV2_MAXHEALTH = 75
+global const int TRAININGDUMMY_SHIELD_LV3_MAXHEALTH = 100
+global const int TRAININGDUMMY_SHIELD_LV4_MAXHEALTH = 125
+global const string TRAININGDUMMY_PLAYLISTVAR_MATCH_ARMORHELMS = "trainingdummies_match_armor_helmets"
+global const int MAX_FR_REALMS = 60
+
+const string SFX_DYNSTAT_RESET 			= "FiringRangeMu1_UI_Range_Stats_ManualReset_1P"
+const string SFX_SETTING_CHANGE_NOTIFY 	= "FiringRangeMu1_UI_Obituary_Updates_1P"
+
+const int DYNSTATS_MAX_RESETTIMEDELTA = 65536	                                  
+const float FIRINGRANGE_MAX_SESSIONDURATION = 3600 * 1000 	              
+
+                         
+                          
+
+table< int, bool >	frSetting_IsShared
+table< int, bool > 	frSetting_ShouldBeSaved
+
+table< int, string > fr_TargetSpeedNames
+table< int, bool > frDummie_Behavior_Defaults
+table< int, bool > frDummie_Behavior_ShouldBeSaved
+
+global table< int, int > frDB_Bits                                                                                 
+global table< int, int > frS_Bits                                                                               
+
+                      
+                                                                     
+
+global const string NETVAR_FR_RANGEMASTER_EHI				= "fr_rangemaster_ehi"
+
+                                                                        
+int frPS_NDX_Start
+int frPS_NDX_End
+const string NETVAR_FRPS_PACKEDBOOLS		= "frps_packedbools"                           
+const string PVAR_FRPS_PACKEDBOOLS			= "FRSettingsPVars.frps_packedbools"
+
+                                                                                           
+int frSS_NDX_Start
+int frSS_NDX_End
+const string NETVAR_FRSS_PACKEDBOOLS		= "frss_packedbools"                         
+const string PVAR_FRSS_PACKEDBOOLS			= "FRSettingsPVars.frss_packedbools"
+
+                                                                                            
+global int frBoolSettings_NDX_Start
+global int frBoolSettings_NDX_End
+global int frIntSettings_NDX_Start
+global int frIntSettings_NDX_End
+table< int, string > frIntSettings_NetVars
+table< int, string > frIntSettings_PVars
+global table < int, bool > frBoolSettings_Defaults
+global table < int, int > frIntSettings_Defaults
+table < int, int > frIntSettings_Mins
+table < int, int > frIntSettings_Maxs
+
+                                                                                            
+int frDB_Movements_NDX_Start
+int frDB_Movements_NDX_End
+int dummie_PackedBoolInt_Default_Movements
+
+                                                                                            
+int frDB_Modifiers_NDX_Start
+int frDB_Modifiers_NDX_End
+                      
+int frDB_Stances_NDX_Start
+int frDB_Stances_NDX_End
+int dummie_PackedBoolInt_Default_Modifiers
+const string NETVAR_FRDB_MODIFIERS_PACKEDBOOLS 	= "frdb_modifiers_packedbools"
+const string PVAR_FRDB_MODIFIERS_PACKEDBOOLS 	= "FRSettingsPVars.frdb_modifiers_packedbools"
+
+global table< int, table< int, bool > > dummie_Movements_BySelector
+global table< int, table< int, bool > > dummie_Stances_BySelector
+
+                   
+                                                                                                 
+int frDB_SpawnSettings_NDX_Start
+int frDB_SpawnSettings_NDX_End
+int dummie_PackedBoolInt_Default_SpawnSettings
+const string NETVAR_FRDB_SPAWNSETTINGS_PACKEDBOOLS 	= "frdb_spawnsettings_packedbools"
+const string PVAR_FRDB_SPAWNSETTINGS_PACKEDBOOLS 	= "FRSettingsPVars.frdb_spawnsettings_packedbools"
+
+global table< int, table< int, bool > > dummie_SpawnDists_BySelector
+                         
+
+                      
+                      
+
+                             
+const bool FRSETTING_DEFAULT_SHOWRUI = true
+const bool FRSETTING_DEFAULT_SHOWDYNSTATS = true
+const bool FRSETTING_DEFAULT_INFINITERELOADS = false
+const bool FRSETTING_DEFAULT_SHOWHITMARKS = false
+
+const bool 	FRSETTING_DEFAULT_FRIENDLYFIRE = false
+
+                             
+global const string SETTINGS_MEGASTRING_PREFIX = "         -"
+const vector FRSETTINGS_PARAMCOLOR = < 190, 214, 255 >
+
+global function PlaylistVar_HasFRSettingsHUD
+
+global function FRS_NetVar_Get_Bool
+global function FRS_PVar_Get_Bool
+
+global function FRS_NetVar_Get_Int
+
+                               
+
+const vector NOTIFY_INCREASE_COLOR = < 190, 119, 119 >
+const vector NOTIFY_DECREASE_COLOR = < 119, 119, 190 >
+
+global function FiringRangeGameMode_Init
+
+#if DEV
+const bool DEBUG_MANTLING = false
+#endif
+
+#if SERVER
+                                                                                                        
+                                                                                                   
+
+                                                         
+                                                        
+                                                          
+                                                   
+
+                                                    
+                                             
+
+                             
+
+                                            
+                                         
+                                                 
+
+                         
+                                 
+
+                                        
+
+                                         
+                                                
+                                         
+                                                
+
+          
+                                           
+
+                   
+                                                         
+                         
+
+                     
+                              
+                           
+
+                                         
+                                        
+
+                         
+                                                             
+
+                                         
+
+                                                                           
+                                                          
+                                                   
+                                                    
+                                           
+
+                
+                                                 
+                                                              
+                                                             
+
+                               
+
+                   
+                         
+
+       
+
+                         
+                                     
+                                       
+                               
+
+             
+#endif          
+
+#if CLIENT
+global function FiringRange_IsCharacterSwitchingEnabled
+global function SCB_FiringRange_EnableCharacterChange
+global function SCB_FiringRange_SetPlayerInFinale
+global function FiringRange_IsPlayerInFinale
+
+global function SCB_Broadcast_FRSetting_FriendlyFire_Change
+
+                         
+global function SCB_DynStats_ResetStats
+global function SCB_Broadcast_FRSettings_TargetSpeed_Change
+global function SCB_Broadcast_FRDummie_ShieldLevel_Change
+global function SCB_Broadcast_FRDummie_Speed_Change
+global function SCB_Broadcast_FRSetting_Changed_Int
+global function SCB_Broadcast_FRSetting_Changed_Bool
+
+                   
+global function SCB_Broadcast_FRSetting_DynamicDummiesEnabled_Change
+                         
+
+global function FR_Settings_Toggle_RUI
+global function FR_Settings_Show_RUI
+global function FR_Settings_Hide_RUI
+global function FR_DynamicStats_OnDummieKilled
+global function FRSettings_Client_Update
+global function ServerCallback_FRSettings_Update_RUI
+global function ServerCallback_FRSettings_Restore_RUI
+
+global function SCB_Broadcast_FRBehavior_Change
+global function SCB_Broadcast_RangeMaster_Change
+
+global function SCB_SettingChangedNotification_InfiniteMags
+global function SCB_SettingChangedNotification_ShowHitMarks
+
+global function Make_TitleString
+
+global function RangeMaster_AmI
+global function RangeMaster_CL_Get
+
+global function SCB_ShowDynStats_ByPVar
+global function DynStats_Hide_RUI
+                               
+
+                   
+global function ServerToClient_DoPresentation
+      
+
+#endif          
+
+#if SERVER
+                                                                                           
+ 
+	                             
+	                                
+	                          
+ 
+
+                            
+ 
+	                     
+	                                
+ 
+#endif
+
+const float SCB_MININTERVAL = 1.0
+
+struct
+{
+	#if SERVER
+
+		                                              
+
+                           
+			                                                                                              
+			                                                               
+			                                             
+			                                
+
+			                                            
+
+			                                                                 
+
+			                         
+			                                                       
+                                 
+		                                                             
+
+		                                   
+		                                       
+		                                                         
+
+		                        
+		                              
+		                           
+		                           
+		                           
+		                          
+		                          
+		                          
+
+		            
+		                                       
+	#endif
+
+	#if CLIENT
+		bool characterSwitchingEnabled = true
+		bool inFinale = false
+                           
+			var dynamicStatsRui = null
+
+			bool dynamicStatsIsVisible = false
+
+			int shotsFired = 0
+			float damage = 0
+			int shotsHit = 0
+			int critShotsHit = 0
+			int kills = 0
+
+			int lastShotsFired = 0
+			float lastDamage = 0
+			int lastShotsHit = 0
+			int lastCritShotsHit = 0
+			int lastKills = 0
+
+			float lastResetTime = -1.0
+			
+#if NX_PROG
+			int resetStatsButton = BUTTON_Y
+#else
+			int resetStatsButton = BUTTON_X
+#endif
+                                 
+
+
+                           
+			var frSettings_RUI = null
+
+			bool frSetting_ShowRUI = true
+
+			table< int, float > lastFRSettingsBroadcastTimes
+                                 
+	#endif          
+}file
+
+void function FiringRangeGameMode_Init()
+{
+	if ( !IsFiringRangeGameMode() )
+		return
+
+	Remote_RegisterServerFunction( "UCB_SV_FRSetting_FriendlyFire_Toggle" )
+
+	Remote_RegisterServerFunction( "UCB_SV_FRSetting_FriendlyFire", "bool", "bool" )
+	Remote_RegisterClientFunction( "SCB_Broadcast_FRSetting_FriendlyFire_Change", "entity" )
+
+	                                            
+	Remote_RegisterServerFunction( "UCB_CustomizeRangeMenu_TrackState", "bool" )
+
+                    
+	Remote_RegisterClientFunction( "ServerToClient_DoPresentation" )
+
+	Remote_RegisterServerFunction( "UCB_SV_FRsetting_DynamicDummiesOn_Changed", "bool", "bool" )
+	Remote_RegisterClientFunction( "SCB_Broadcast_FRSetting_DynamicDummiesEnabled_Change", "entity" )
+                          
+
+                          
+		FR_Init_NetVars_And_PVars()
+
+		fr_TargetSpeedNames[ 0 ] <- "#FR_TARGETSPEED_NAME_1"
+		fr_TargetSpeedNames[ 1 ] <- "#FR_TARGETSPEED_NAME_1"
+		fr_TargetSpeedNames[ 2 ] <- "#FR_TARGETSPEED_NAME_2"
+		fr_TargetSpeedNames[ 3 ] <- "#FR_TARGETSPEED_NAME_3"
+		fr_TargetSpeedNames[ 4 ] <- "#FR_TARGETSPEED_NAME_4"
+
+		Remote_RegisterServerFunction( "UCB_SV_FRSetting_InfiniteReloads", "bool" )
+		Remote_RegisterServerFunction( "UCB_SV_FRSetting_DynStats", "bool" )
+		Remote_RegisterServerFunction( "UCB_SV_FRSetting_HitMarks", "bool" )
+		Remote_RegisterServerFunction( "UCB_SV_FRSetting_HitMarks_Toggle" )
+
+		                                        
+		Remote_RegisterServerFunction( "UCB_SV_FRSetting_Change_Int", "int", 0, eFRSettingType.COUNT_, "int", 0, FRINTSETTINGS_MAXSELECTIONS )
+		
+                       
+                                                    
+                             
+
+		Remote_RegisterServerFunction( "UICallback_FRDummies_Reset" )
+
+		Remote_RegisterServerFunction( "ClientToServer_FiringRange_ResetHealthOnSameCharacterSelect" )
+		Remote_RegisterServerFunction( "ClientToServer_FiringRange_StopValkPassive" )
+		Remote_RegisterServerFunction( "ClientToServer_FiringRange_MenuIsOn" )
+		Remote_RegisterServerFunction( "ClientToServer_FiringRange_MenuIsOff" )
+
+		Remote_RegisterClientFunction( "SCB_ShowDynStats_ByPVar" )
+		Remote_RegisterClientFunction( "SCB_ShowHitMarks_Set_ByNetvar" )
+		Remote_RegisterClientFunction( "ServerCallback_FRSettings_Update_RUI" )
+		Remote_RegisterClientFunction( "ServerCallback_FRSettings_Restore_RUI" )
+
+		Remote_RegisterClientFunction( "SCB_SettingChangedNotification_InfiniteMags" )
+		Remote_RegisterClientFunction( "SCB_SettingChangedNotification_ShowHitMarks" )
+
+		                  
+		Remote_RegisterClientFunction( "SCB_Broadcast_FRSetting_Changed_Int", "entity", "int", 0, eFRSettingType.COUNT_, "int", 0, FRINTSETTINGS_MAXSELECTIONS )
+		Remote_RegisterClientFunction( "SCB_Broadcast_FRSetting_Changed_Bool", "entity", "int", 0, eFRSettingType.COUNT_, "bool" )
+
+		Remote_RegisterClientFunction( "SCB_Broadcast_FRBehavior_Change", "entity", "int", 0, eDummieBehaviorType.COUNT_, "bool" )
+		Remote_RegisterClientFunction( "SCB_Broadcast_RangeMaster_Change" )
+
+		Remote_RegisterClientFunction( "SCB_DynStats_ResetStats" )
+
+		Remote_RegisterClientFunction( "FRSettings_Client_Update" )
+
+		                
+		Remote_RegisterServerFunction( "PIN_Record_CustomizeRangeSettings_ForMenuClose" )
+		Remote_RegisterServerFunction( "PIN_CCB_Record_DynamicStats_TimeBetweenResets", "int", 0, DYNSTATS_MAX_RESETTIMEDELTA )
+                                
+
+	#if SERVER
+		                                                  
+		                                                           
+		                                                
+		                                            
+
+                           
+			                                                                  
+			                                                          
+                                 
+
+		                   
+
+		                                 
+
+		                                               
+			                                     
+
+		                                  
+
+		                                                                                   
+		                                                                                               
+		                                                                                             
+		                                                                                            
+		                                                                                            
+		                                                                                           
+		                                                                                           
+		                                                                                          
+	#endif          
+
+	#if CLIENT
+		AddCallback_OnClientScriptInit( OnClientScriptInit )
+		AddClientCallback_OnResolutionChanged( FiringRange_ResolutionChanged )
+		AddCallback_OnCharacterSelectMenuOpened( FiringRange_CharacterMenuOpened )
+		AddCallback_OnCharacterSelectMenuClosed( FiringRange_CharacterMenuClosed )
+
+                           
+			Obituary_SetVerticalOffset( 80 )
+
+			AddCallback_OnWeaponAttack( DynStats_OnWeaponFired )
+			AddLocalPlayerDidDamageCallback( OnPlayerDidDamage )
+			RegisterSignal ("OnShotFired")
+                                 
+
+		IntroDisplayThread()
+
+		string shieldDesc = Localize( "#FRSETTING_DUMMIESHIELD_DESC",
+			Localize("#LOOT_TIER1"), EvolvingArmor_GetEvolvingArmorHealthForTier( 1 ),
+			Localize("#LOOT_TIER2"), EvolvingArmor_GetEvolvingArmorHealthForTier( 2 ),
+			Localize("#LOOT_TIER3"), EvolvingArmor_GetEvolvingArmorHealthForTier( 3 ),
+			Localize("#LOOT_TIER5"), EvolvingArmor_GetEvolvingArmorHealthForTier( 5 )
+		)
+		RunUIScript( "SettingsButton_SetShieldDescription", shieldDesc )
+		FiringRangeOverrideGamestateUI()
+	#endif          
+
+
+}
+
+#if CLIENT
+void function FiringRangeOverrideGamestateUI()
+{
+	ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_firingrange.rpak" )
+}
+#endif          
+
+                         
+void function FR_Init_NetVars_And_PVars()
+{
+	                            
+	frBoolSettings_NDX_Start 	= eFRSettingType.FRIENDLYFIRE
+	frBoolSettings_NDX_End		= eFRSettingType.TARGETSPEED
+	frBoolSettings_Defaults	[ eFRSettingType.FRIENDLYFIRE ] 	<- false
+
+                    
+	frBoolSettings_Defaults	[ eFRSettingType.DYNAMICDUMMIESON ] <- true
+                          
+
+	                           
+	frIntSettings_NDX_Start = eFRSettingType.TARGETSPEED
+	frIntSettings_NDX_End 	= eFRSettingType.COUNT_
+
+	                              
+	frIntSettings_NetVars	[ eFRSettingType.TARGETSPEED ] 		<- "frsetting_targetspeed"
+	frIntSettings_PVars		[ eFRSettingType.TARGETSPEED ] 		<- "FRSettingsPVars.targetspeed"
+	frIntSettings_Mins		[ eFRSettingType.TARGETSPEED ] 		<- 1
+	frIntSettings_Maxs		[ eFRSettingType.TARGETSPEED ] 		<- 4
+	frIntSettings_Defaults	[ eFRSettingType.TARGETSPEED ] 		<- 2
+
+	                             
+	frIntSettings_NetVars	[ eFRSettingType.FRDUMMIESHIELDLVL ] <- "frsetting_dummieshieldlvl"
+	frIntSettings_PVars		[ eFRSettingType.FRDUMMIESHIELDLVL ] <- "FRSettingsPVars.dummieshieldlvl"
+	frIntSettings_Mins		[ eFRSettingType.FRDUMMIESHIELDLVL ]	<- 1
+	frIntSettings_Maxs		[ eFRSettingType.FRDUMMIESHIELDLVL ]	<- 4
+	frIntSettings_Defaults	[ eFRSettingType.FRDUMMIESHIELDLVL ] <- 3
+
+	                      
+	frIntSettings_NetVars	[ eFRSettingType.FRDUMMIESPEED ] 	<- "frsetting_dummiespeed"
+	frIntSettings_PVars		[ eFRSettingType.FRDUMMIESPEED ] 	<- "FRSettingsPVars.dummiespeed"
+	frIntSettings_Mins		[ eFRSettingType.FRDUMMIESPEED ] 	<- 1
+	frIntSettings_Maxs		[ eFRSettingType.FRDUMMIESPEED ] 	<- 3
+	frIntSettings_Defaults	[ eFRSettingType.FRDUMMIESPEED ] 	<- 2
+
+	                         
+	frIntSettings_NetVars	[ eFRSettingType.FRDUMMIEMOVEMENT ] 	<- "frsetting_dummiemovement"
+	frIntSettings_PVars		[ eFRSettingType.FRDUMMIEMOVEMENT ] 	<- "FRSettingsPVars.dummiemovement"
+	frIntSettings_Mins		[ eFRSettingType.FRDUMMIEMOVEMENT ] 	<- eDummie_Selector_Movements.STAYINPLACE
+	frIntSettings_Maxs		[ eFRSettingType.FRDUMMIEMOVEMENT ] 	<- eDummie_Selector_Movements.COUNT_
+	frIntSettings_Defaults	[ eFRSettingType.FRDUMMIEMOVEMENT ] 	<- eDummie_Selector_Movements.STAYINPLACE
+	FRDummie_Movements_Settings_Init()
+
+	                      
+	frIntSettings_NetVars	[ eFRSettingType.FRDUMMIESTANCE ] 	<- "frsetting_dummiestate"
+	frIntSettings_PVars		[ eFRSettingType.FRDUMMIESTANCE ] 	<- "FRSettingsPVars.dummiestate"
+	frIntSettings_Mins		[ eFRSettingType.FRDUMMIESTANCE ] 	<- eDummie_Selector_States.STAND
+	frIntSettings_Maxs		[ eFRSettingType.FRDUMMIESTANCE ] 	<- eDummie_Selector_States.COUNT_
+	frIntSettings_Defaults	[ eFRSettingType.FRDUMMIESTANCE ] 	<- eDummie_Selector_States.STAND
+	FRDummie_Stances_Settings_Init()
+
+                   
+	                       
+	frIntSettings_NetVars	[ eFRSettingType.FRDUMMIESPAWNDISTS ] <- "frsetting_dummiespawndists"
+	frIntSettings_PVars		[ eFRSettingType.FRDUMMIESPAWNDISTS ] <- "FRSettingsPVars.dummiespawndists"
+	frIntSettings_Mins		[ eFRSettingType.FRDUMMIESPAWNDISTS ] <- eDummie_Selector_SpawnDists.CQB
+	frIntSettings_Maxs		[ eFRSettingType.FRDUMMIESPAWNDISTS ] <- eDummie_Selector_SpawnDists.RANDOM
+	frIntSettings_Defaults	[ eFRSettingType.FRDUMMIESPAWNDISTS ] <- eDummie_Selector_SpawnDists.MID
+	FRDummie_SpawnDist_Settings_Init()
+
+	                        
+	frIntSettings_NetVars	[ eFRSettingType.FRDUMMIESHOOTING ] <- "frsetting_dummiesshoot"
+	frIntSettings_PVars		[ eFRSettingType.FRDUMMIESHOOTING ] <- "FRSettingsPVars.dummiesshoot"
+	frIntSettings_Mins		[ eFRSettingType.FRDUMMIESHOOTING ] <- eDummie_Selector_Shooting.OFF
+	frIntSettings_Maxs		[ eFRSettingType.FRDUMMIESHOOTING ] <- eDummie_Selector_Shooting.FULLCOMBAT
+	frIntSettings_Defaults	[ eFRSettingType.FRDUMMIESHOOTING ] <- eDummie_Selector_Shooting.OFF
+	
+                         
+
+	                                                                       
+	frSetting_IsShared[ eFRSettingType.SHOWRUI ] 		<- false
+	frSetting_IsShared[ eFRSettingType.SHOWDYNSTATS ] 	<- false
+	frSetting_IsShared[ eFRSettingType.INFINITEMAGS ] 	<- false
+	frSetting_IsShared[ eFRSettingType.SHOWHITMARKS ] 	<- false
+	
+	frSetting_IsShared[ eFRSettingType.FRIENDLYFIRE ] 		<- true
+	frSetting_IsShared[ eFRSettingType.TARGETSPEED ] 		<- true
+	frSetting_IsShared[ eFRSettingType.FRDUMMIESHIELDLVL ] 	<- true
+	frSetting_IsShared[ eFRSettingType.FRDUMMIESPEED ] 		<- true
+	frSetting_IsShared[ eFRSettingType.FRDUMMIEMOVEMENT ]	<- true
+	frSetting_IsShared[ eFRSettingType.FRDUMMIESTANCE ]		<- true
+
+                   
+	frSetting_IsShared[ eFRSettingType.FRDUMMIESPAWNDISTS ] <- true
+	frSetting_IsShared[ eFRSettingType.FRDUMMIESHOOTING ] 	<- true
+	frSetting_IsShared[ eFRSettingType.DYNAMICDUMMIESON ] 	<- true
+                         
+
+	                                                                              
+	frSetting_ShouldBeSaved[ eFRSettingType.SHOWRUI ] 		<- true
+	frSetting_ShouldBeSaved[ eFRSettingType.SHOWDYNSTATS ] 	<- true
+	frSetting_ShouldBeSaved[ eFRSettingType.INFINITEMAGS ] 	<- true
+	frSetting_ShouldBeSaved[ eFRSettingType.SHOWHITMARKS ] 	<- true
+
+	                   
+	frSetting_ShouldBeSaved[ eFRSettingType.FRIENDLYFIRE ] 	<- false
+
+	                  
+	frSetting_ShouldBeSaved[ eFRSettingType.TARGETSPEED ] 		<- true
+	frSetting_ShouldBeSaved[ eFRSettingType.FRDUMMIESHIELDLVL ] <- true
+	frSetting_ShouldBeSaved[ eFRSettingType.FRDUMMIESPEED ] 	<- true
+	frSetting_ShouldBeSaved[ eFRSettingType.FRDUMMIEMOVEMENT ] 	<- true
+	frSetting_ShouldBeSaved[ eFRSettingType.FRDUMMIESTANCE ] 	<- true
+                    
+		frSetting_ShouldBeSaved[ eFRSettingType.FRDUMMIESHOOTING ] 		<- false
+		frSetting_ShouldBeSaved[ eFRSettingType.FRDUMMIESPAWNDISTS ] 	<- true
+		frSetting_ShouldBeSaved[ eFRSettingType.DYNAMICDUMMIESON ] 		<- false
+                          
+
+	                                                                                                    
+	                     
+	  		                                                         
+	  		                                                       
+
+	                     
+	frPS_NDX_Start 	= eFRSettingType.SHOWRUI
+	frPS_NDX_End	= eFRSettingType.FRIENDLYFIRE
+		
+	int bitIndex
+	bitIndex = 0
+	for( int settingIndex = frPS_NDX_Start; settingIndex < frPS_NDX_End; settingIndex++ )
+	{
+		frS_Bits[ settingIndex ] <- ( 1 << bitIndex )
+		bitIndex++
+	}
+	                        
+	frSS_NDX_Start 	= eFRSettingType.FRIENDLYFIRE
+	frSS_NDX_End	= eFRSettingType.TARGETSPEED
+	bitIndex = 0
+	for( int settingIndex = frSS_NDX_Start; settingIndex < frSS_NDX_End; settingIndex++ )
+	{
+		frS_Bits[ settingIndex ] <- ( 1 << bitIndex )
+		bitIndex++
+	}
+
+	                         
+
+	                                           
+	frDummie_Behavior_Defaults[ eDummieBehaviorType.STAYINPLACE ] 	<- true
+	frDummie_Behavior_Defaults[ eDummieBehaviorType.STRAFE ] 		<- false
+
+	                                                
+	frDummie_Behavior_Defaults[ eDummieBehaviorType.CANSTAND ] 		<- true
+	frDummie_Behavior_Defaults[ eDummieBehaviorType.CANCROUCH ] 	<- false
+	frDummie_Behavior_Defaults[ eDummieBehaviorType.RANDINTERVALS ] <- false
+
+	#if DEV
+		printt( format( "%s(): Dummie Movements Default PackedBool Int == %s ", FUNC_NAME(), string( dummie_PackedBoolInt_Default_Movements  )))
+		printt( format( "%s(): Dummie Modifiers Default PackedBool Int == %s ", FUNC_NAME(), string( dummie_PackedBoolInt_Default_Modifiers  )))
+                     
+			printt( format( "%s(): Dummie Spawn Settings Default PackedBool Int == %s ", FUNC_NAME(), string( dummie_PackedBoolInt_Default_SpawnSettings  )))
+                           
+	#endif
+
+	                             
+	                        
+	RegisterNetworkedVariable( NETVAR_FR_RANGEMASTER_EHI, SNDC_PLAYER_EXCLUSIVE, SNVT_BIG_INT, -1 )
+
+	                                                                                  
+	for( int settingNDX = frIntSettings_NDX_Start; settingNDX < frIntSettings_NDX_End; settingNDX++ )
+	{
+		RegisterNetworkedVariable( frIntSettings_NetVars[ settingNDX ], SNDC_PLAYER_EXCLUSIVE, SNVT_INT, frIntSettings_Defaults[ settingNDX ])
+	}
+
+	                       
+	RegisterNetworkedVariable( NETVAR_FRPS_PACKEDBOOLS, SNDC_PLAYER_EXCLUSIVE, SNVT_UNSIGNED_INT, 3 )                                           
+	RegisterNetworkedVariable( NETVAR_FRSS_PACKEDBOOLS, SNDC_PLAYER_EXCLUSIVE, SNVT_UNSIGNED_INT, 0 )
+
+	#if CLIENT
+		                                
+		                      
+		RegisterNetVarIntChangeCallback( NETVAR_FR_RANGEMASTER_EHI, NetVarCallback_Changed_Int )
+		                       
+		RegisterNetVarIntChangeCallback( NETVAR_FRPS_PACKEDBOOLS, NetVarCallback_Changed_Int )
+		RegisterNetVarIntChangeCallback( NETVAR_FRSS_PACKEDBOOLS, NetVarCallback_Changed_Int )
+
+		                      
+		for( int settingNDX = frIntSettings_NDX_Start; settingNDX < frIntSettings_NDX_End; settingNDX++ )
+		{
+			RegisterNetVarIntChangeCallback( frIntSettings_NetVars[ settingNDX ], NetVarCallback_Changed_Int )
+		}
+	#endif
+}
+
+                   
+void function FRDummie_SpawnDist_Settings_Init()
+{
+	                                     
+	for( int i = 0; i < eDummie_Selector_SpawnDists.COUNT_; i++ )
+		dummie_SpawnDists_BySelector[ i ] <- {}                         
+
+	table< int, bool > spawnDists
+
+	spawnDists = dummie_SpawnDists_BySelector[ eDummie_Selector_SpawnDists.CQB ]
+	spawnDists[ eCRng_SpawnDistances.CQB ] <- true
+	spawnDists[ eCRng_SpawnDistances.MID ] <- false
+	spawnDists[ eCRng_SpawnDistances.FAR ] <- false
+	spawnDists[ eCRng_SpawnDistances.VFAR ] <- false
+
+	spawnDists = dummie_SpawnDists_BySelector[ eDummie_Selector_SpawnDists.MID ]
+	spawnDists[ eCRng_SpawnDistances.CQB ] <- false
+	spawnDists[ eCRng_SpawnDistances.MID ] <- true
+	spawnDists[ eCRng_SpawnDistances.FAR ] <- false
+	spawnDists[ eCRng_SpawnDistances.VFAR ] <- false
+
+	spawnDists = dummie_SpawnDists_BySelector[ eDummie_Selector_SpawnDists.FAR ]
+	spawnDists[ eCRng_SpawnDistances.CQB ] <- false
+	spawnDists[ eCRng_SpawnDistances.MID ] <- false
+	spawnDists[ eCRng_SpawnDistances.FAR ] <- true
+	spawnDists[ eCRng_SpawnDistances.VFAR ] <- false
+
+	spawnDists = dummie_SpawnDists_BySelector[ eDummie_Selector_SpawnDists.VFAR ]
+	spawnDists[ eCRng_SpawnDistances.CQB ] <- false
+	spawnDists[ eCRng_SpawnDistances.MID ] <- false
+	spawnDists[ eCRng_SpawnDistances.FAR ] <- false
+	spawnDists[ eCRng_SpawnDistances.VFAR ] <- true
+
+	spawnDists = dummie_SpawnDists_BySelector[ eDummie_Selector_SpawnDists.RANDOM ]
+	spawnDists[ eCRng_SpawnDistances.CQB ] <- true
+	spawnDists[ eCRng_SpawnDistances.MID ] <- true
+	spawnDists[ eCRng_SpawnDistances.FAR ] <- true
+	spawnDists[ eCRng_SpawnDistances.VFAR ] <- true
+}
+                         
+
+void function FRDummie_Movements_Settings_Init()
+{
+	                                     
+	for( int i = 0; i < eDummie_Selector_Movements.COUNT_; i++ )
+		dummie_Movements_BySelector[ i ] <- {}                         
+
+	table< int, bool > movementBools
+
+	movementBools = dummie_Movements_BySelector[ eDummie_Selector_Movements.STAYINPLACE ]
+	movementBools[ eDummieBehaviorType.STAYINPLACE ] 	<- true
+	movementBools[ eDummieBehaviorType.STRAFE ] 		<- false
+	movementBools[ eDummieBehaviorType.RANDINTERVALS ] <- false
+
+	movementBools = dummie_Movements_BySelector[ eDummie_Selector_Movements.STRAFECONST ]
+	movementBools[ eDummieBehaviorType.STAYINPLACE ] 	<- false
+	movementBools[ eDummieBehaviorType.STRAFE ] 		<- true
+	movementBools[ eDummieBehaviorType.RANDINTERVALS ] <- false
+
+	movementBools = dummie_Movements_BySelector[ eDummie_Selector_Movements.STRAFERANDOM ]
+	movementBools[ eDummieBehaviorType.STAYINPLACE ] 	<- false
+	movementBools[ eDummieBehaviorType.STRAFE ] 		<- true
+	movementBools[ eDummieBehaviorType.RANDINTERVALS ] <- true
+
+	movementBools = dummie_Movements_BySelector[ eDummie_Selector_Movements.RANDOM ]
+	movementBools[ eDummieBehaviorType.STAYINPLACE ] 	<- true
+	movementBools[ eDummieBehaviorType.STRAFE ] 		<- true
+	movementBools[ eDummieBehaviorType.RANDINTERVALS ] <- true
+}
+
+void function FRDummie_Stances_Settings_Init()
+{
+	                                     
+	for( int i = 0; i < eDummie_Selector_States.COUNT_; i++ )
+		dummie_Stances_BySelector[ i ] <- {}                         
+
+	table< int, bool > stanceBools
+
+	stanceBools = dummie_Stances_BySelector[ eDummie_Selector_States.STAND ]
+	stanceBools[ eDummieBehaviorType.CANSTAND ] 	<- true
+	stanceBools[ eDummieBehaviorType.CANCROUCH ] 	<- false
+
+	stanceBools = dummie_Stances_BySelector[ eDummie_Selector_States.CROUCH ]
+	stanceBools[ eDummieBehaviorType.CANSTAND ] 	<- false
+	stanceBools[ eDummieBehaviorType.CANCROUCH ] 	<- true
+
+	stanceBools = dummie_Stances_BySelector[ eDummie_Selector_States.RANDOM ]
+	stanceBools[ eDummieBehaviorType.CANSTAND ] 	<- true
+	stanceBools[ eDummieBehaviorType.CANCROUCH ] 	<- true
+}
+
+void function FR_DummieBehaviorData_SetDefaults( table< int, bool > behaviorData )
+{
+	for(int behIndex = 0; behIndex < eDummieBehaviorType.COUNT_; behIndex ++ )
+	{
+		behaviorData[ behIndex ] <- frDummie_Behavior_Defaults[ behIndex ]
+	}
+}
+
+                      
+                                                              
+
+void function FRDB_ErrorCheck ( entity player, int behaviorType )
+{
+	string 	errStr = format( "%s(): player %s not valid.", FUNC_NAME(), string ( player ) )
+	Assert( IsValid( player ), errStr  )
+
+	errStr = format( "%s(): behaviorType parm out of range.", FUNC_NAME() )
+	Assert( (( behaviorType >= 0 ) && ( behaviorType < eDummieBehaviorType.COUNT_ )), errStr  )
+}
+
+      
+
+bool function FRDB_BehaviorIsMovement( int behaviorType )
+{
+	return(( behaviorType >= frDB_Movements_NDX_Start ) && ( behaviorType < frDB_Movements_NDX_End ))
+}
+
+bool function FRDB_BehaviorIsModifier( int behaviorType )
+{
+	return(( behaviorType >= frDB_Modifiers_NDX_Start) && ( behaviorType < frDB_Modifiers_NDX_End ))
+}
+
+                   
+bool function FRDB_BehaviorIsSpawnSetting( int behaviorType )
+{
+	return(( behaviorType >= frDB_SpawnSettings_NDX_Start) && ( behaviorType < frDB_SpawnSettings_NDX_End ))
+}
+                         
+
+                                                      
+
+void function FRS_ErrorCheck ( entity player, int settingType )
+{
+	string errStr = format( "%s(): player %s not valid.", FUNC_NAME(), string ( player ) )
+	Assert( IsValid( player ), errStr  )
+
+	errStr = format( "%s(): settingType parm out of range.", FUNC_NAME() )
+	Assert( (( settingType >= 0 ) && ( settingType < eFRSettingType.COUNT_ )), errStr  )
+}
+
+      
+
+bool function FRS_SettingIsPersonal( int settingType )
+{
+	return(( settingType >= frPS_NDX_Start ) && ( settingType < frPS_NDX_End ))
+}
+
+      
+
+bool function FRS_SettingIsShared( int settingType )
+{
+	return(( settingType >= frSS_NDX_Start ) && ( settingType < frSS_NDX_End ))
+}
+
+                                                   
+
+string function FRS_GetNetVarForSetting( int settingType )
+{
+	string errStr = format( "%s(): settingType parm out of range.", FUNC_NAME() )
+	Assert( (( settingType >= 0 ) && ( settingType < eFRSettingType.COUNT_ )), errStr  )
+
+	if( FRS_SettingIsPersonal( settingType ) )
+		return NETVAR_FRPS_PACKEDBOOLS
+
+	return NETVAR_FRSS_PACKEDBOOLS
+}
+
+      
+
+string function FRS_GetPVarForSetting( int settingType )
+{
+	string errStr = format( "%s(): settingType parm out of range.", FUNC_NAME() )
+	Assert( (( settingType >= 0 ) && ( settingType < eFRSettingType.COUNT_ )), errStr  )
+
+	if( FRS_SettingIsPersonal( settingType ) )
+		return PVAR_FRPS_PACKEDBOOLS
+
+	return PVAR_FRSS_PACKEDBOOLS
+}
+
+      
+
+bool function FRS_NetVar_Get_Bool( entity player, int settingType )
+{
+	FRS_ErrorCheck( player, settingType )
+
+	int bitToCheck = frS_Bits[ settingType ]
+	string varToCheck = FRS_GetNetVarForSetting( settingType )
+	int packedBool = player.GetPlayerNetInt( varToCheck )
+
+	bool result = ( packedBool & bitToCheck ) > 0 ? true : false
+	return result
+}
+
+      
+
+bool function FRS_PVar_Get_Bool( entity player, int settingType )
+{
+	FRS_ErrorCheck( player, settingType )
+
+	int bitToCheck = frS_Bits[ settingType ]
+	string varToCheck = FRS_GetPVarForSetting( settingType )
+	int packedBool = expect int( player.GetPersistentVar( varToCheck ))
+
+	bool result = ( packedBool & bitToCheck ) > 0 ? true : false
+	return result
+}
+
+      
+
+int function FRS_NetVar_Get_Int( entity player, int settingType )
+{
+	string behaviorNetVar = frIntSettings_NetVars[ settingType ]
+	return( player.GetPlayerNetInt( behaviorNetVar ))
+}
+
+      
+
+int function FRS_PVar_Get_Int( entity player, int settingType )
+{
+	int value = player.GetPersistentVarAsInt( frIntSettings_PVars[ settingType ] )
+	return value
+}
+
+#if SERVER
+
+                                                   
+
+                                                                              
+ 
+	                                     
+
+	                                        
+	                                                        
+	                                                   
+
+	                                                           
+
+	                   
+	 
+		          
+		 
+			            
+				                        
+		 
+		    
+		 
+			           
+				                        
+		 
+		                                              
+	 
+ 
+
+                                                                            
+ 
+	                                     
+
+	                           
+	                                        
+	                                                      
+	                                                                 
+
+	                                                           
+
+	                   
+	 
+		          
+		 
+			            
+				                        
+		 
+		    
+		 
+			           
+				                        
+		 
+		                                               
+	 
+ 
+
+                                                                             
+ 
+	                                                        
+
+	                                                   
+
+	                                           
+ 
+
+                                                                           
+ 
+	                                                    
+
+	                                                   
+
+	                                          
+ 
+
+        
+                              
+        
+
+                                                                  
+ 
+	                                         
+
+	                                              
+	 
+		                               
+		                                                 
+		                                                    
+	 
+ 
+
+                                                                  
+ 
+	                                         
+	                                              
+	 
+		                                   
+		                                                        
+		                                                                         
+	 
+
+	                                                                                
+
+	                             
+ 
+
+                                                                                 
+ 
+	                                                
+		      
+
+	                                                                         
+		      
+
+	                                                                     
+	                                     
+ 
+
+                                                 
+                                                                                                                   
+ 
+	                                              
+		      
+
+	                                          
+
+	                                         
+	                                              
+	 
+		                                   
+		                                                        
+		                                                                         
+	 
+
+	                                                               
+	                                                          
+ 
+
+                                                                             
+ 
+	                                                                                
+	                                                                              
+
+	                            
+	                                                          	                                                       
+	                                                     		                                                  
+	                                                                                                                     
+ 
+
+                                                                           
+ 
+	                                                                                
+	                                                                         
+
+	                           
+	                                                       		                                                 
+	                                                        	                                                  
+ 
+
+                                                                            
+ 
+	                            
+		      
+
+	                            
+		      
+
+	                             
+		      
+
+	                             
+		      
+
+	                    
+	               
+	               
+	                 
+
+	                                                 
+	                                                            
+	
+	                                        
+	                                                          
+	                                                          
+
+	                                              
+	                                                          
+	                                                          
+
+	                                          
+	                                                          
+	                                                          
+
+	                                             
+	                                                          
+	                                                          
+
+	                                           
+	                                                          
+	                                                          
+
+                    
+	                                               
+	                                                          
+	                                                          
+                          
+ 
+
+                                                                                                
+ 
+
+ 
+
+                                              
+ 
+	                  
+
+	                                   
+	                                             
+	                               
+	 
+		                        
+			        
+
+		                               
+			                               
+	 
+
+	                                       
+	                                                                                                   
+	                                   
+	 
+		                                                         
+		                                                 
+		 
+			                    
+			     
+		 
+	 
+
+	                  
+ 
+
+        
+        
+        
+#endif          
+                               
+
+#if CLIENT
+void function SCB_Broadcast_FRSetting_FriendlyFire_Change( entity playerThatChanged )
+{
+                          
+		if( CheckFRSettingsBroadcastDebounce( eFRSettingType.FRIENDLYFIRE ) )
+		{
+			entity localPlayer = GetLocalViewPlayer()                               
+			bool isEnabled     = IsTeamRabid( localPlayer.GetTeam() )
+			string mainText    = (isEnabled ? "#NOTIFY_FRIENDLY_FIRE_ON" : "#NOTIFY_FRIENDLY_FIRE_OFF")
+			string mainTextLoc = Localize( mainText )
+			string subText     = (IsValid( playerThatChanged ) ? Localize( "#NOTIFY_FRIENDLY_FIRE_SUBTEXT", playerThatChanged.GetPlayerName() ) : "")
+			vector titleColor  = (isEnabled ? ENEMY_COLOR : FRIENDLY_COLOR)
+			                                         
+			AnnouncementMessage( localPlayer, mainTextLoc, subText, titleColor )
+			file.lastFRSettingsBroadcastTimes[ eFRSettingType.FRIENDLYFIRE ] = Time()
+		}
+
+		if( PlaylistVar_HasFRSettingsHUD() )
+		{
+			FRSettings_Client_Update()
+		}
+      
+                                                                          
+                                                           
+                                                                                             
+                                           
+                                                                                                                                           
+                                                                 
+                                                                      
+                                
+}
+
+                   
+void function SCB_Broadcast_FRSetting_DynamicDummiesEnabled_Change( entity playerThatChanged )
+{
+	if( CheckFRSettingsBroadcastDebounce( eFRSettingType.DYNAMICDUMMIESON ) )
+	{
+		entity localPlayer = GetLocalViewPlayer()                               
+		bool isEnabled     = IsTeamRabid( localPlayer.GetTeam() )
+		string mainText    = (isEnabled ? "#NOTIFY_FRIENDLY_FIRE_ON" : "#NOTIFY_FRIENDLY_FIRE_OFF")
+		string mainTextLoc = Localize( mainText )
+		string subText     = (IsValid( playerThatChanged ) ? Localize( "#NOTIFY_FRIENDLY_FIRE_SUBTEXT", playerThatChanged.GetPlayerName() ) : "")
+		vector titleColor  = (isEnabled ? ENEMY_COLOR : FRIENDLY_COLOR)
+		                                         
+		AnnouncementMessage( localPlayer, mainTextLoc, subText, titleColor )
+		file.lastFRSettingsBroadcastTimes[ eFRSettingType.DYNAMICDUMMIESON ] = Time()
+	}
+
+	if( PlaylistVar_HasFRSettingsHUD() )
+	{
+		FRSettings_Client_Update()
+	}
+
+}
+                         
+
+                         
+        
+                                            
+void function SCB_Broadcast_FRSetting_Changed_Int( entity playerThatChanged, int settingType, int value )
+{
+	if( !IsValid( playerThatChanged ) || !playerThatChanged.IsPlayer())
+		return
+
+	                               
+	string notifierName = playerThatChanged.GetPlayerName()
+	if( notifierName == "" )
+		return
+
+	vector playerColor = GetKeyColor( COLORID_MEMBER_COLOR0, playerThatChanged.GetTeamMemberIndex())
+	vector valueColor = FRIENDLY_COLOR
+	vector baseColor = < 219, 219, 219 >
+	
+	table< int, string > settingValues
+	table< int, vector > valueColors
+	string settingName
+	string settingValue
+	string settingNameLocalized                                 
+	string settingValueLocalized                                        
+
+	switch( settingType )
+	{
+		case eFRSettingType.TARGETSPEED:
+			settingName = "#FR_SETTINGNAME_TARGETSPEED"
+			settingValues[ 0 ] <- "#FR_TARGETSPEED_NAME_1"
+			settingValues[ 1 ] <- "#FR_TARGETSPEED_NAME_1"
+			settingValues[ 2 ] <- "#FR_TARGETSPEED_NAME_2"
+			settingValues[ 3 ] <- "#FR_TARGETSPEED_NAME_3"
+			settingValues[ 4 ] <- "#FR_TARGETSPEED_NAME_4"
+			settingValue = settingValues[ value ]
+			break
+		case eFRSettingType.FRDUMMIESPEED:
+			settingName = "#DUMMIE_SPEED"
+			settingValues[ 1 ] <- "#FRSETTING_DUMMIESTRAFESPEED_NAME_1"
+			settingValues[ 2 ] <- "#FRSETTING_DUMMIESTRAFESPEED_NAME_2"
+			settingValues[ 3 ] <- "#FRSETTING_DUMMIESTRAFESPEED_NAME_3"
+			settingValue = settingValues[ value ]
+			break
+		case eFRSettingType.FRDUMMIEMOVEMENT:
+			settingName = "#DUMMIE_MOVEMENT"
+			settingValues[ eDummie_Selector_Movements.STAYINPLACE ] 	<- "#DUMMIE_MOVEMENT_STAYINPLACE"
+			settingValues[ eDummie_Selector_Movements.STRAFECONST ] 	<- "#DUMMIE_MOVEMENT_STRAFECONST"
+			settingValues[ eDummie_Selector_Movements.STRAFERANDOM ] 	<- "#DUMMIE_MOVEMENT_STRAFERANDOM"
+			settingValues[ eDummie_Selector_Movements.RANDOM ] 			<- "#DUMMIE_MOVEMENT_RANDOM"
+			settingValue = settingValues[ value ]
+			break
+		case eFRSettingType.FRDUMMIESTANCE:
+			settingName = "#DUMMIE_MOVEMENT"
+			settingValues[ eDummie_Selector_States.STAND ] 	<- "#DUMMIE_STATE_STAND"
+			settingValues[ eDummie_Selector_States.CROUCH ] <- "#DUMMIE_STATE_CROUCH"
+			settingValues[ eDummie_Selector_States.RANDOM ] <- "#DUMMIE_STATE_RANDOM"
+			settingValue = settingValues[ value ]
+			break
+		case eFRSettingType.FRDUMMIESHIELDLVL:
+			settingName = "#DUMMIE_SHIELDLVL"
+			settingValues[ 0 ] <- "#LOOT_TIER1"
+			settingValues[ 1 ] <- "#LOOT_TIER1"
+			settingValues[ 2 ] <- "#LOOT_TIER2"
+			settingValues[ 3 ] <- "#LOOT_TIER3"
+			settingValues[ 4 ] <- "#LOOT_TIER5"
+			valueColors[ 0 ] <- GetKeyColor( COLORID_TEXT_LOOT_TIER1, 0 )
+			valueColors[ 1 ] <- GetKeyColor( COLORID_TEXT_LOOT_TIER1, 0 )
+			valueColors[ 2 ] <- GetKeyColor( COLORID_TEXT_LOOT_TIER2, 0 )
+			valueColors[ 3 ] <- GetKeyColor( COLORID_TEXT_LOOT_TIER3, 0 )
+			valueColors[ 4 ] <- GetKeyColor( COLORID_TEXT_LOOT_TIER5, 0 )
+			settingValue = settingValues[ value ]
+			valueColor = valueColors[ value ]
+			break
+                    
+		case eFRSettingType.FRDUMMIESHOOTING:
+			settingName = "#DUMMIE_SHOOTING"
+			settingValues[ eDummie_Selector_Shooting.OFF ] 		<- "#DUMMIE_SHOOTING_OFF"
+			settingValues[ eDummie_Selector_Shooting.EASY ] 		<- "#DUMMIE_SHOOTING_EASY"
+			settingValues[ eDummie_Selector_Shooting.MEDIUM ] 		<- "#DUMMIE_SHOOTING_MEDIUM"
+			settingValues[ eDummie_Selector_Shooting.HARD ] 		<- "#DUMMIE_SHOOTING_HARD"
+			settingValues[ eDummie_Selector_Shooting.FULLCOMBAT ] 	<- "#DUMMIE_SHOOTING_FULLCOMBAT"
+			settingValue = settingValues[ value ]
+			break
+		case eFRSettingType.FRDUMMIESPAWNDISTS:
+			settingName = "#DUMMIE_SPAWNDISTS"
+			settingValues[ eDummie_Selector_SpawnDists.CQB ] <- "#DUMMIE_SPAWNDISTS_CQB"
+			settingValues[ eDummie_Selector_SpawnDists.MID ] <- "#DUMMIE_SPAWNDISTS_MID"
+			settingValues[ eDummie_Selector_SpawnDists.FAR ] <- "#DUMMIE_SPAWNDISTS_FAR"
+			settingValues[ eDummie_Selector_SpawnDists.VFAR ] <- "#DUMMIE_SPAWNDISTS_VFAR"
+			settingValues[ eDummie_Selector_SpawnDists.RANDOM ] <- "#DUMMIE_SPAWNDISTS_RANDOM"
+			settingValue = settingValues[ value ]
+			break
+                          
+	}
+	settingNameLocalized = Localize( settingName, "" )
+	settingValueLocalized = Localize( settingValue )
+
+	                          
+	EmitSoundOnEntity( GetLocalViewPlayer(), SFX_SETTING_CHANGE_NOTIFY )
+	Obituary_Print_Localized( Localize( "#OBIT_SETTINGCHANGE_NOTIFY", notifierName, settingNameLocalized, settingValueLocalized), playerColor, valueColor )
+
+	if( PlaylistVar_HasFRSettingsHUD() )
+	{
+		FRSettings_Client_Update()
+	}
+}
+
+void function SCB_Broadcast_FRSetting_Changed_Bool( entity playerThatChanged, int settingType, bool value )
+{
+	if( !IsValid( playerThatChanged ) || !playerThatChanged.IsPlayer())
+		return
+
+	                               
+	string notifierName = playerThatChanged.GetPlayerName()
+	if( notifierName == "" )
+		return
+
+	vector playerColor = GetKeyColor( COLORID_MEMBER_COLOR0, playerThatChanged.GetTeamMemberIndex())
+
+	                
+	bool isOn = value
+	string onOff = isOn ? Localize( "#FRSETTING_ON" ) : Localize( "#FRSETTING_OFF" )
+	vector valueColor  = isOn ? FRIENDLY_COLOR : ENEMY_COLOR
+
+	                   
+	table< int, string > settingNamesByType
+	string settingName = ""
+	string settingNameLocalized
+                    
+		settingNamesByType[ eFRSettingType.DYNAMICDUMMIESON ] 	<- "#DYNDUMMIE_DYNSPAWN_CHANGED"
+                          
+
+	settingName = settingNamesByType[ settingType ]
+	settingNameLocalized = Localize( settingName )
+
+	                          
+	vector baseColor = < 219, 219, 219 >
+	#if DEV
+		printt( format( "%s(): setting changed == %s", FUNC_NAME(), settingNameLocalized ) )
+	#endif
+
+	EmitSoundOnEntity( GetLocalViewPlayer(), SFX_SETTING_CHANGE_NOTIFY )
+	Obituary_Print_Localized( Localize( "#OBIT_SETTINGCHANGE_NOTIFY", notifierName, settingNameLocalized, onOff ), playerColor, valueColor )
+	                                                                                                                            
+
+	FRSettings_Client_Update()
+}
+
+        
+
+void function SCB_Broadcast_FRSettings_TargetSpeed_Change( entity playerThatChanged, int speedParm )
+{
+	if( !IsValid( playerThatChanged ) || !playerThatChanged.IsPlayer())
+		return
+
+	                               
+	string notifierName = playerThatChanged.GetPlayerName()
+	if( notifierName == "" )
+		return
+
+	vector playerColor = GetKeyColor( COLORID_MEMBER_COLOR0, playerThatChanged.GetTeamMemberIndex())
+
+	string speedName = Localize( fr_TargetSpeedNames[ speedParm ])
+
+	string settingNameLocalized = Localize( "#FR_SETTINGNAME_TARGETSPEED" )
+
+	                          
+	vector valueColor = FRIENDLY_COLOR
+	vector baseColor = < 219, 219, 219 >
+	EmitSoundOnEntity( GetLocalViewPlayer(), SFX_SETTING_CHANGE_NOTIFY )
+	Obituary_Print_Localized( Localize( "#OBIT_SETTINGCHANGE_NOTIFY", notifierName, settingNameLocalized, speedName ), playerColor, valueColor )
+
+	if( PlaylistVar_HasFRSettingsHUD() )
+	{
+		FRSettings_Client_Update()
+	}
+}
+
+void function SCB_Broadcast_FRDummie_ShieldLevel_Change( entity playerThatChanged, int shieldParm )
+{
+	if( !IsValid( playerThatChanged ) || !playerThatChanged.IsPlayer())
+		return
+
+	                               
+	string notifierName = playerThatChanged.GetPlayerName()
+	if( notifierName == "" )
+		return
+
+	vector playerColor = GetKeyColor( COLORID_MEMBER_COLOR0, playerThatChanged.GetTeamMemberIndex())
+
+	string settingNameLocalized = Localize( "#DUMMIE_SHIELDLVL", "" )
+
+	                
+	table< int, string > shieldLevelNames
+	shieldLevelNames[ 1 ] <- "#LOOT_TIER1"
+	shieldLevelNames[ 2 ] <- "#LOOT_TIER2"
+	shieldLevelNames[ 3 ] <- "#LOOT_TIER3"
+	shieldLevelNames[ 4 ] <- "#LOOT_TIER5"
+
+	table< int, vector > shieldColors
+	shieldColors[ 1 ] <- GetKeyColor( COLORID_TEXT_LOOT_TIER1, 0 )
+	shieldColors[ 2 ] <- GetKeyColor( COLORID_TEXT_LOOT_TIER2, 0 )
+	shieldColors[ 3 ] <- GetKeyColor( COLORID_TEXT_LOOT_TIER3, 0 )
+	shieldColors[ 4 ] <- GetKeyColor( COLORID_TEXT_LOOT_TIER5, 0 )
+
+	string shieldNameLocalized = Localize( shieldLevelNames[ shieldParm ] )
+	vector shieldColor = shieldColors[ shieldParm ]
+
+	                          
+	vector valueColor = FRIENDLY_COLOR
+	vector baseColor = < 219, 219, 219 >
+	EmitSoundOnEntity( GetLocalViewPlayer(), SFX_SETTING_CHANGE_NOTIFY )
+	Obituary_Print_Localized( Localize( "#OBIT_SETTINGCHANGE_NOTIFY", notifierName, settingNameLocalized, shieldNameLocalized ), playerColor, shieldColor )
+
+	if( PlaylistVar_HasFRSettingsHUD() )
+	{
+		FRSettings_Client_Update()
+	}
+}
+
+void function SCB_Broadcast_FRDummie_Speed_Change( entity playerThatChanged, int speedParm )
+{
+	if( !IsValid( playerThatChanged ) || !playerThatChanged.IsPlayer())
+		return
+
+	                               
+	string notifierName = playerThatChanged.GetPlayerName()
+	if( notifierName == "" )
+		return
+
+	vector playerColor = GetKeyColor( COLORID_MEMBER_COLOR0, playerThatChanged.GetTeamMemberIndex())
+
+	table< int, string > dummieSpeedNames
+	dummieSpeedNames[ 1 ] <- "#FRSETTING_DUMMIESTRAFESPEED_NAME_1"
+	dummieSpeedNames[ 2 ] <- "#FRSETTING_DUMMIESTRAFESPEED_NAME_2"
+	dummieSpeedNames[ 3 ] <- "#FRSETTING_DUMMIESTRAFESPEED_NAME_3"
+
+	                          
+	vector valueColor = FRIENDLY_COLOR
+	vector baseColor = < 219, 219, 219 >
+	string settingNameLocalized = Localize( "#DUMMIE_SPEED", "" )
+	string dummieSpeedNameLocalized = Localize( dummieSpeedNames[ speedParm ] )
+	EmitSoundOnEntity( GetLocalViewPlayer(), SFX_SETTING_CHANGE_NOTIFY )
+	Obituary_Print_Localized( Localize( "#OBIT_SETTINGCHANGE_NOTIFY", notifierName, settingNameLocalized, dummieSpeedNameLocalized), playerColor, valueColor )
+
+	if( PlaylistVar_HasFRSettingsHUD() )
+	{
+		FRSettings_Client_Update()
+	}
+}
+
+        
+
+bool function CheckFRSettingsBroadcastDebounce( int SCBType )
+{
+	if( !( SCBType in file.lastFRSettingsBroadcastTimes ) )
+	{
+		file.lastFRSettingsBroadcastTimes[ SCBType ] <- 0
+		return true
+	}
+
+	return( Time() - file.lastFRSettingsBroadcastTimes[ SCBType ] >= SCB_MININTERVAL )
+}
+                               
+
+bool function FiringRange_IsCharacterSwitchingEnabled()
+{
+	return file.characterSwitchingEnabled
+}
+
+void function FiringRange_CharacterMenuOpened()
+{
+	if ( IsFiringRangeGameMode() )
+	{
+		entity player = GetLocalClientPlayer()
+
+		if( PlayerHasPassive( player, ePassives.PAS_VALK ))
+		{
+			Remote_ServerCallFunction( "ClientToServer_FiringRange_StopValkPassive" )
+		}
+		if( PlayerHasPassive( player, ePassives.PAS_CRYPTO ))
+		{
+			Remote_ServerCallFunction( "ClientToServer_FiringRange_MenuIsOn" )
+		}
+	}
+
+}
+
+void function FiringRange_CharacterMenuClosed()
+{
+	if ( IsFiringRangeGameMode() )
+	{
+		entity player = GetLocalClientPlayer()
+
+		if ( PlayerHasPassive( player, ePassives.PAS_CRYPTO ))
+		{
+			Remote_ServerCallFunction( "ClientToServer_FiringRange_MenuIsOff" )
+		}
+	}
+}
+
+
+void function FiringRange_ResolutionChanged()
+{
+	SCB_FiringRange_EnableCharacterChange( file.characterSwitchingEnabled )
+}
+
+void function SCB_FiringRange_EnableCharacterChange( bool enable )
+{
+	file.characterSwitchingEnabled = enable
+	if ( !enable )
+		CloseCharacterSelectNewMenu()
+	RunUIScript( "EnableCharacterChangeInFiringRange", enable )
+}
+
+void function SCB_FiringRange_SetPlayerInFinale( bool inFinale )
+{
+	file.inFinale = true
+	SCB_FiringRange_EnableCharacterChange ( false )
+}
+
+bool function FiringRange_IsPlayerInFinale()
+{
+	return file.inFinale
+}
+#endif          
+
+#if SERVER
+                                                                                             
+ 
+	                                    
+	 
+		                                                                                                                                   
+		      
+	 
+
+	                                            
+	                                                                     
+
+	                             
+	                             
+	 
+		                        
+	 
+
+	                                                                                                                      
+	                                        
+
+	                                                                                                 
+
+	                                           
+	 
+		                           
+		 
+                            
+				                                                                                
+				                    
+					                                                                                                    
+                                  
+			                    
+				                                                                                                  
+		 
+	 
+ 
+
+                                                                   
+ 
+	                                    
+	 
+		                                                                                                                                   
+		      
+	 
+
+	                           
+	                                                                    
+	                             
+	 
+		                                                                                                                                             
+		      
+	 
+
+	                                            
+	                                                                                                                      
+	                                        
+
+	                                           
+	 
+		                           
+		 
+                            
+				                                                                                
+                                  
+			                                                                                                  
+		 
+	 
+ 
+
+                   
+                                                                                                         
+ 
+	                        
+		      
+
+	                                            
+	                                                                     
+	                                           
+	 
+		                           
+		 
+			                                                                         
+			                    
+				                                                                                                                                   
+		 
+	 
+	                                                                   
+	                                                                      
+	                                        
+ 
+                         
+
+                         
+                
+                                   
+                                                           
+   
+  	                        
+  		      
+  
+  	                                         
+   
+
+                                                                    
+ 
+	                        
+		      
+
+	                                                
+ 
+
+                                                                         
+ 
+	                                                                       
+
+	                                                                  
+ 
+
+        
+
+                                                                           
+ 
+	                        
+		            
+
+	                        
+		            
+
+	                                            
+		            
+
+	                                                   
+	
+	                
+	 
+		                                     
+	 
+
+	           
+ 
+
+                                                                                     
+ 
+	                        
+		      
+
+	                        
+		      
+
+	                                                                           
+	                                                                                     
+
+	                                                
+
+	                                  
+	  	                     
+	  	                                             
+	                                                        
+	 
+		                                              
+	 
+ 
+
+                                                                                    
+ 
+	                        
+		      
+
+	                        
+		      
+
+	                                                                           
+	                                                                                                           
+
+	                                                
+
+	                                  
+	   	                             
+	  	                                                                    
+	                                                        
+	 
+		                                              
+	 
+ 
+
+                                                                           
+ 
+	                                                                                                                
+		      
+
+	                                          
+ 
+
+                                                       
+ 
+	                        
+		            
+
+	                                                                                     
+	                             
+ 
+
+                                                                                                  
+ 
+	                                                                                                                
+		      
+
+	                                          
+	                                               
+		      
+
+	                                                                
+
+	                                   
+	 
+		                                                                                      
+	 
+ 
+
+                                                                            
+ 
+	                                                                      
+	                                                      
+ 
+
+                                                                                                        
+ 
+	                                                                                                                
+		      
+
+	                                               
+		      
+
+	               
+	 
+		                                                                         
+	 
+
+	                                                            
+ 
+
+                                                               
+ 
+	                                                                                                                
+		      
+
+	                                          
+	                                               
+		      
+
+	                                                   
+	                                                                              
+	                             
+
+	                                             
+ 
+
+                                                                    
+ 
+	                                                                                                                
+		      
+
+	                                          
+	                                               
+		      
+
+	                                                
+
+	                                   
+	 
+		                                                                                      
+	 
+ 
+
+                                                                                             
+ 
+	                                                                       
+	                                                                        
+	             
+		                                                                                      
+ 
+
+                                                                                     
+ 
+	                                              
+		      
+
+	                                                        
+
+	                                                                        
+	                               
+	 
+		                                                    
+	 
+
+	                                          
+	                                           
+ 
+
+                                                                                     
+ 
+	                                                                            
+ 
+
+                        
+                                                                        
+                                                                                      
+ 
+	                         
+		      
+
+	                         
+		      
+
+	                                                                                                  
+		      
+
+	                                         
+	                       
+	                                                        
+	                            
+
+	                                           
+	                                           
+
+	                       
+		                 
+
+	                        
+		                 
+
+	                                                     
+	                                                                       
+
+	                                    
+	                        
+	                        
+
+	                     
+	 
+		                                
+			                    
+			                                               
+			     
+		                                  
+			                                               
+			     
+		                                     
+			                                                  
+			                                                          
+			     
+		                                   
+			                                                
+			                                                        
+			     
+		                                      
+			                                                   
+			     
+                    
+		                                     
+			                                                  
+			                                                    
+			     
+		                                       
+			                    
+			                                                    
+			     
+                          
+ 		        
+			     
+	 
+
+	                  
+	 
+		                                                                                       
+		                                                         
+	 
+ 
+
+                      
+
+                                                                             
+ 
+	                                                                                                                       
+ 
+
+                                                                                                                                                               
+ 
+	                        
+		      
+
+	                        
+		      
+
+	                           
+
+	                	                                                            
+	                  	                                                            
+	               		                                                            
+
+	                   	                     
+
+	               		                                                          
+
+	                 	                                                                
+	                  	                                                               
+	                 	                                                             
+	               		                                                            
+
+                    
+		               		                                                               
+		                                                                                     
+		                                                                                     
+      
+                       
+                          
+                           
+       
+
+	                          	                                                                                     
+								                                                                                       
+								                                                    
+ 
+
+                                                                                           
+ 
+	                                                                   
+ 
+
+        
+
+                                                                                            
+ 
+	             
+	                                    
+ 
+
+                   
+                                                                         
+ 
+	                                                     
+		                                          
+	    
+		                                         
+ 
+                         
+
+        
+
+                                                                                                             
+ 
+	                                              
+		      
+
+	                                                                        
+	                               
+	 
+		                             
+		                    
+			        
+
+		                                                   
+		            
+			                                                                                                      
+	 
+
+	                                         
+	                                             
+
+	                                                               
+	                     
+	 
+		                                
+			                                         
+			     
+		                                      
+			     
+		                                  
+			                                         
+			     
+		                                     
+			                                            
+			     
+		                                   
+			                                          
+			     
+		        
+			     
+	 
+ 
+
+      
+
+                                                                                                               
+ 
+	                                              
+		      
+
+	                                                                        
+	                               
+	 
+		                                                        
+		            
+			                                                                                                       
+	 
+
+	                                         
+	                                              
+ 
+
+      
+
+                                                                                   
+ 
+	                                              
+		      
+
+	                                                                        
+	                               
+	 
+		                                                  
+	 
+
+	                                         
+	                                         
+ 
+
+                                                                               
+ 
+	                                                                        
+ 
+
+      
+
+                                                                       
+ 
+	                                 
+
+                    
+	                                         
+	 
+		                       
+			                                 
+		    
+			                           
+	 
+                          
+ 
+
+                               
+
+                                    
+
+                                             
+                                                        
+                                                                     
+                                       
+
+                                                
+ 
+	                                        
+	                                                     
+
+	                            
+	                                                       
+
+	                             
+	 
+		                                                                                      
+		                                         
+	 
+ 
+
+                         
+                                         
+                                                          
+                      
+
+                                                                                                                        
+                                                         
+ 
+	                        
+		           
+
+	                           
+	                                 
+ 
+
+                                           
+ 
+	                                       
+		           
+
+	                                              
+		           
+
+	                                                              
+
+	                                                    
+	                                                                      
+	 
+		                          
+	 
+
+	             
+
+	                              
+	 
+		                          
+
+		                                          
+		 
+			                                   
+			 
+				                      
+				     
+			 
+		 
+	 
+
+	             
+ 
+
+                                                                                                                
+                                                
+ 
+	                                             
+		            
+
+	                           
+
+	                              
+
+	                          
+
+	                         
+	                                           
+ 
+
+                                            
+ 
+	                          
+	                                       
+		                                  
+
+	                                                              
+
+	                                                    
+	                                                                      
+	 
+		                          
+	 
+
+	                                                           
+	                               
+		                                  
+	    
+	 
+		                                            
+
+		                            
+		 
+			                                         
+			                                                
+			                                                
+			 
+				                                                                                                                        
+				                                                    
+			 
+		 
+		    
+		 
+			                                  
+		 
+	 
+
+	                                     
+	                             
+ 
+
+                                               
+ 
+	                                                           
+	                                                              
+	                               
+	 
+		                                                                
+	 
+ 
+
+                                                                          
+ 
+	                                                          
+	                                
+	 
+		                       
+		 
+			                                                               
+			                                          
+			                                                                             
+		 
+	 
+ 
+
+                                                       
+ 
+	                                                          
+	                                
+	 
+		                        
+		 
+			                                   
+		 
+	 
+ 
+
+                                                        
+ 
+	                                                                           
+ 
+
+                                                       
+ 
+	                                                 
+	 
+		                       
+		 
+			                                                                                 
+		 
+		    
+		 
+			                                                     
+		 
+	 
+ 
+
+                                                     
+ 
+	                        
+		      
+
+	                                                                 
+	                           
+	                                 
+	                          
+
+	                            
+	                                                                             
+	                               
+
+	                                     
+ 
+
+                                                   
+ 
+	                                             
+		      
+
+	                           
+
+	                                                                                 
+	                                       
+	 
+		                                   
+	 
+
+	                                                           
+		                                              
+ 
+
+                                                      
+ 
+	                                             
+		      
+
+	                           
+
+	                                                                                 
+	                                       
+	 
+		                                   
+	 
+
+	                                                      
+		                                                     
+ 
+
+                                                                       
+ 
+	                                               
+ 
+
+                                                         
+ 
+	                                       
+	 
+		                                   
+	 
+
+	                                        
+ 
+
+        
+
+                                                            
+ 
+	                        
+		      
+
+	                        
+		      
+
+	                                                           
+		                                                  
+ 
+
+                                                               
+ 
+	                                                          
+		                                                             
+ 
+
+                                                               
+ 
+	                                                              
+ 
+
+                      
+                                                        
+                                         
+                               
+
+                         
+                                                     
+ 
+	                        
+		      
+
+	                                                    
+	                                                    
+		           
+
+	                          
+	                                              
+
+                    
+		                                        
+                          
+
+	                               
+	                                                           
+	                                                                                 
+
+	               
+	                           
+	                                          
+	                                       
+	                                          
+
+                    
+	                           
+                          
+
+	       
+		                                                                         
+		                                                                                               
+		                                                               
+		                                                                           
+	      
+
+	                                                 
+	                       
+	 
+		                                                                                           
+
+		                                      
+		                                                                  
+		                                                                         
+		                                                                                
+		                                                                                          
+
+		                   
+		                                                                                                                
+		                                                                        
+
+		         
+
+		                              
+		                                          
+		                                                      
+
+		                                     
+		                                          
+		                                                                            
+
+		                              
+		                                          
+		                                                                        
+
+		                                 
+		                                             
+		                                                                           
+
+		                              
+		                                           
+		                                                                         
+
+                     
+		                                             
+		                                                                            
+
+		                                        
+		                                               
+		                                                                              
+
+		                       
+		                                                                                                          
+
+                          
+
+		                                             
+		                                                
+	 
+	    
+	 
+		                                                               
+		                      
+		                    
+
+		                            
+		                                                                            
+		                                                            
+		                                                                            
+		                                                                   
+		                                                                            
+		                                                                   
+
+		                  
+		                                                      
+
+		                            
+		                                                                                 
+		                                                       
+
+		                                                                                     
+		 
+			       
+				                                                                                                                             
+			      
+			                                               
+
+			                            
+			                                                                        
+			                                                       
+
+			                  
+			                   
+			                                                              
+
+			                           
+			                                                                    
+
+			                    
+			                                                                
+
+			                                       
+			                  	                                                             
+			              		                                                           
+			                                                                                
+			                                                                   
+			                                                                 
+
+                     
+			                      
+			                                                                                                      
+			                                                                   
+
+			                             
+			                                                                     
+
+			                       
+			                                                                    
+                           
+
+			                                                                                    
+			                      
+		 
+		                       
+		 
+			       
+				                                                                                                                           
+			      
+
+			                                                    
+			                                                                                      
+			                                  
+			                                                                   
+
+			                      
+			                   
+			                                                     
+			                                                                 
+
+			                   
+			                                                     
+			                                                                                   
+
+			                        
+			                                                        
+			                                                                                      
+
+			                    
+			                                                      
+			                                                                                    
+
+			                    
+			                                                     
+			                                                                                       
+
+                     
+			                      
+			                                                        
+			                                                                                       
+
+			                  
+			                                                          
+			                                                                                         
+
+			                          
+			                                                           
+			                                                                                         
+
+                           
+		 
+	 
+	                                                                   
+
+                    
+		                                         
+		                                          
+		 
+			                             
+		 
+                          
+
+                   
+		                                      
+       
+ 
+
+                                                                           
+ 
+	                                                                             
+	                                                                                                               
+	
+	                                              
+	                                              
+	                                                            
+	
+	                                                                  
+	                                                            
+		                                 
+	
+	                        
+	 
+		                                
+			                                                                                                   
+			     
+		                                  
+			                                                                                                   
+			     
+		                                     
+			                                                                                          
+			     
+		                                   
+			                                                                                        
+			     
+		                                      
+			                                                                                           
+			     
+                    
+		                                        
+			                                                                                            
+			     
+
+
+                          
+	 
+ 
+
+                                                                             
+ 
+	                                                                             
+	                                                                                                                   
+
+	                                                                      
+
+	                                                
+	 
+		                                                                            
+	 
+	    
+	 
+		                                                                                         
+		                                                                                                     
+	 
+ 
+
+                                                                  
+ 
+	                                                                          
+	       
+		                
+		             
+			                                                                          
+		    
+			                                                                          
+	      
+	                
+ 
+
+                                                                         
+ 
+	                                                    
+
+	                     
+	       
+		                                                                                                             
+	      
+
+	                                                              
+	               
+	             
+
+	                       
+	 
+		                              
+		                                 
+		 
+			                                 
+
+			                     
+			       
+				                                                                                                     
+			      
+			                                            
+				           
+		 
+	 
+	    
+	 
+		                                 
+		 
+			                                 
+			                     
+			       
+				                                                                                                     
+			      
+			                                
+				           
+			     
+		 
+	 
+	                     
+	       
+		                       
+			                                                                         
+	      
+	             
+ 
+                               
+
+                                                      
+ 
+	                                                                
+
+	                                          
+
+	                                                 
+
+	                           
+	                                         
+
+	                      
+	                                                                   
+	 
+		                                                         
+
+		                                                
+		 
+			                                          
+		 
+
+		                                                  
+		                                         
+	 
+	                                
+
+	                                                    
+	                                                              
+	                                            
+	                 
+	 
+		       
+			                                                                                                
+		      
+
+                     
+			                                                                                                   
+			                              
+                           
+
+		                                                   
+		                                                                  
+		                                                                                            
+		                                                                                           
+		                                   
+		 
+			                                                              
+			 
+				                
+			 
+		 
+	 
+
+	  
+	                                   
+
+	  
+	                                           
+	 
+		                                                        
+		                        
+		 
+			                      
+			 
+				                                                                                                        
+				              
+			 
+		 
+		                                            
+	 
+
+	  
+	                                                        
+		                                                         
+
+	  
+
+	                                                            
+	                     
+	 
+		                                            
+		                            
+		 
+			                                                          
+		 
+	 
+	                          
+	 
+		                                      
+                     
+			                                       
+			                                 
+        
+	 
+ 
+
+                                                                                               
+ 
+	                                  
+		      
+
+	                              
+		                          
+
+	                                                        
+	 
+		                                                                    
+		                      
+		 
+			                     
+			 
+				                                                                                                             
+				             
+			 
+		 
+		            
+	 
+ 
+
+                                                          
+ 
+	                      
+	                                        
+	 
+		                      
+			                           
+	 
+
+	                                 
+	                                          
+	 
+		                                                    
+		                            
+	 
+ 
+
+                                                                                    
+ 
+	                                  
+		      
+
+	                         
+
+	                                                        
+	                               
+	                                                     
+	 
+		                               
+		                                                                                                            
+		              
+	 
+
+	                   
+ 
+
+                                                                                   
+ 
+	                                  
+		      
+
+	                         
+
+	                                                                    
+	                              
+	                  
+ 
+
+                                              
+ 
+	                              
+	 
+		                        
+			      
+
+		                                  
+		                                     
+		                               
+		                             
+		                                 
+
+		                                         
+
+		                                                             
+		 
+			                                                     
+			                                               
+
+			                                                                
+
+			                                                             
+			                                                                                                       
+			                      
+			           
+			                        
+				      
+
+			                                                         
+
+			                    
+
+			              
+			 
+				                                                             
+			 
+
+		 
+
+		                                  
+
+		           
+
+		                                
+
+                           
+
+			                                                 
+			                          
+			                                                                                    
+			                                                                                      
+
+			                                                                                
+			                                                                
+			 
+				                                                                                                   
+				                                        
+				 
+					                                                                     
+				 
+				                                                                   
+				                                          
+				 
+					                                                         
+					                                                                                         
+					                                                                                      
+				 
+			 
+
+			                                                       
+			                                                      
+			 
+				                                                                                                       
+				                                                                             
+			 
+
+			                                                   
+			                                             
+
+			                
+			                                                             
+			                                      
+
+			                                            
+			                                                                                
+
+			                                                        
+			                                                                                       
+
+			                                                                  
+
+                     
+			                                           
+				                      
+                           
+
+       
+                                                               
+    
+                                              
+                                   
+    
+                                 
+
+		                                                             
+			                                                              
+
+
+                   
+		                                                                          
+			                                                                          
+                         
+
+	   
+ 
+
+                   
+                                                           
+ 
+	                         
+	 
+		                      
+		                                 
+
+		                                           
+			                                        
+
+		                                                  
+		 
+			                                                                                               
+			                                                             
+			                                                                                 
+
+			                                                              
+			 
+				                                      
+
+				                                                       
+				 
+					                                                                                       
+					 
+						                              
+						 
+							                                                                                                           
+						 
+						     
+					 
+				 
+			 
+		 
+	 
+ 
+
+                                                        
+ 
+	                                        
+
+	                          
+	                                           
+
+	                                     
+ 
+
+                                                          
+ 
+	                          
+		      
+
+	                                 
+
+	                                             
+	 
+		                          
+		                                           
+	 
+
+	                                                   
+
+	                                                             
+	 
+		                                                                 
+	 
+	                                                                   
+	 
+		                                                        
+		                                                                                   
+		                        
+		 
+			                                              
+			 
+				                                                                                
+			 
+			                                                   
+			 
+				                                                                                
+			 
+			                                                   
+			 
+				                                                                                
+			 
+		 
+		    
+		 
+			                                             
+			 
+				                                                                               
+			 
+			                                                  
+			 
+				                                                                               
+			 
+			                                                  
+			 
+				                                                                               
+			 
+		 
+
+		                                                     
+	 
+ 
+                         
+
+                                          
+ 
+	                                                                                          
+ 
+
+                                               
+ 
+	                                                                                                      
+ 
+
+                                                                              
+ 
+	                              
+	                               
+
+	                                                                       
+	                                                                                                    
+
+	                                                                                                                                                                                                                        
+		      
+
+	                                                                                                
+	                                                                
+	 
+		                       
+		                                                  
+		                         
+		 
+			                                                 
+			       
+				                     
+				 
+					                                                          
+					                                                           
+				 
+			      
+		 
+		                                                                                                                                                                          
+		 
+			                                    
+		 
+
+		                                                                                                                       
+		                          
+		 
+			                             
+			                              
+		 
+
+		                                       
+		                                                               
+	 
+ 
+
+                                                                                                                                   
+ 
+	                                                      
+	                                                  
+
+	                                                                           
+	                        
+	                         
+	 
+		                         
+		 
+			                                       
+
+			                                                       
+			 
+				                                                                             
+			 
+			    
+			 
+				                                                                    
+			 
+		 
+		    
+		 
+			                                       
+		 
+	 
+	    
+	 
+		                        
+		 
+			                             
+			                                     
+				                                                                   
+				     
+			                                 
+				                                                                 
+				     
+			                          
+				                                                                  
+				     
+			        
+				                                                                     
+				     
+		 
+	 
+
+	                      
+	                       
+	 
+		                                        
+	 
+
+	                                                                                                 
+ 
+
+                                                                  
+ 
+	                              
+		                          
+
+	                                   
+
+	                                           
+	 
+		                                                        
+		                        
+		 
+			                      
+			 
+				              
+			 
+		 
+		                                          
+	 
+ 
+
+                         
+                                                                                          
+ 
+	                                                                       
+	                        
+	 
+		                                         
+		                                                     
+	 
+ 
+                               
+
+                                                                         
+ 
+	  	                                                
+	 
+		                                          
+	 
+ 
+
+                                                                  
+ 
+	  	                                                  
+	 
+		                             
+	 
+
+ 
+
+                                                                    
+ 
+	  	                                                  
+	 
+		                              
+	 
+
+ 
+
+                     
+                                             
+ 
+                                          
+                                       
+ 
+                           
+
+                                                      
+
+                                                                           
+ 
+	                                               
+		      
+
+	                                                  
+		      
+
+	       
+		                                                                                                            
+	      
+
+	                                               
+ 
+
+                                                                                      
+ 
+	                                                
+ 
+
+                                                                      
+ 
+	                                             
+	 
+		                                               
+	 
+ 
+
+                                                        
+ 
+	                                                  
+		            
+
+	                      
+	         
+	  	                                                                                                                                
+	        
+
+	                                                 
+ 
+
+        
+
+       
+                                                    
+ 
+	                                                                    
+ 
+
+                                                      
+ 
+	                           
+
+	                                        
+	 
+		                                   
+	 
+
+	                                                              
+	                                          
+	 
+		                                                                 
+		                                                                                        
+	 
+ 
+             
+
+#endif          
+
+#if CLIENT
+
+void function OnClientScriptInit( entity player )
+{
+	if( GetFirstTimePlayerState() < eNewPlayerState.FIRING_RANGE_COMPLETED )
+	{
+		SetFirstTimePlayerState( eNewPlayerState.FIRING_RANGE_COMPLETED )
+	}
+}
+
+void function IntroDisplayThread()
+{
+	thread function() : ()
+	{
+		FlagWait( "EntitiesDidLoad" )
+
+		wait 3.0
+
+		entity viewPlayer = GetLocalViewPlayer()
+		if ( IsValid( viewPlayer ) )
+			MapZones_ZoneIntroText( viewPlayer, ("#" + GetMapName()), -1 )
+
+		wait 6.0
+		SCB_Broadcast_RangeMaster_Change()
+	}()
+}
+#endif          
+
+
+#if SERVER
+                                                                                   
+                                 
+ 
+	                                       
+ 
+#endif          
+
+  
+                                                            
+	             
+                                                            
+  
+                         
+#if CLIENT
+void function SCB_ShowDynStats_ByPVar()
+{
+	entity player = GetLocalViewPlayer()
+
+	                                                    
+	bool isOn = FRS_PVar_Get_Bool( player, eFRSettingType.SHOWDYNSTATS )
+
+	if ( isOn )
+		DynStats_Show_RUI()
+	else
+		DynStats_Hide_RUI()
+
+	FRSettings_Client_Update()
+}
+
+void function DynStats_OnWeaponFired( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
+{
+	if ( !IsValid( player ) || !( FiringRangeHasDynamicStats() )|| !IsValid ( weapon ) || ammoUsed <= 0 )
+		return
+
+	if ( !InPrediction() || !IsFirstTimePredicted() )
+		return
+
+	if ( weapon.IsWeaponOffhand()
+		 || IsBitFlagSet( weapon.GetWeaponTypeFlags(), WPT_TACTICAL )
+		 || IsBitFlagSet( weapon.GetWeaponTypeFlags(), WPT_ULTIMATE )
+		 || IsBitFlagSet( weapon.GetWeaponTypeFlags(), WPT_GRENADE )
+		 || IsBitFlagSet( weapon.GetWeaponTypeFlags(), WPT_CONSUMABLE ) )
+	{
+		if ( weaponName != "mp_ability_sniper_ult" && weaponName != "mp_weapon_mobile_hmg" )                                               
+			return
+	}
+
+	                                       
+	if ( weaponName == "mp_weapon_bow" && weapon.GetScriptInt0() == eShatterRoundsTypes.SHATTER_TRI ) 	                                    
+	{
+		file.shotsFired+=7
+	}
+
+	else if ( weaponName == "mp_weapon_mastiff" || weaponName == "mp_weapon_shotgun")                 
+	{
+		file.shotsFired+=8
+	}
+
+	else if ( weaponName == "mp_weapon_shotgun_pistol" || weaponName == "mp_weapon_doubletake" )                     
+	{
+		file.shotsFired+=3
+	}
+
+	else if ( weaponName == "mp_weapon_energy_shotgun" )              
+	{
+		file.shotsFired+=11
+	}
+
+	else if ( weaponName == "mp_weapon_defender" )               
+	{
+		file.shotsFired+=16
+	}
+	                               
+
+	                              
+	else
+		file.shotsFired++
+
+	DynStats_UpdateStats_RUI (
+		file.shotsFired,
+		file.damage,
+		file.shotsHit,
+		file.critShotsHit,
+		file.kills
+	)
+}
+
+void function OnPlayerDidDamage ( entity attacker, entity victim, vector damagePosition, int damageType, float damageAmount )
+{
+	if (!IsValid( attacker ) || !IsValid( victim ) || !attacker.IsPlayer() || !( FiringRangeHasDynamicStats() ) )
+		return
+
+	table< string, bool > damageFlags
+
+	                             
+	damageFlags[ "DF_BULLET" ] <- IsBitFlagSet( damageType, DF_BULLET )
+	damageFlags[ "DF_HEADSHOT" ] <- IsBitFlagSet( damageType, DF_HEADSHOT )
+	damageFlags[ "DF_MELEE" ] <- IsBitFlagSet( damageType, DF_MELEE )
+	damageFlags[ "DF_SHIELD_BREAK" ] <- IsBitFlagSet( damageType, DF_SHIELD_BREAK )
+	damageFlags[ "DF_SHIELD_DAMAGE" ] <- IsBitFlagSet( damageType, DF_SHIELD_DAMAGE )
+	damageFlags[ "DF_SNIPER" ] <- IsBitFlagSet( damageType, DF_SNIPER )
+
+	  
+	 	                                                    
+	 	                                                
+	   
+	                                                                                   
+	                                                                         
+	                                                                                   
+	                                                                         
+	                                                                                             
+	                                                                             
+	                                                                           
+	                                                               
+	                                                                       
+	                                                                         
+	                                                                           
+	                                                                             
+	                                                                           
+	                                                                             
+	                                                                                     
+	                                                                             
+	                                                                                   
+	                                                                       
+	                                                                                   
+	                                                                                             
+	                                                                                   
+	                                                                       
+	                                                                                             
+	                                                                 
+	                                                                       
+
+	if ( damageAmount <= 0 || damageFlags[ "DF_MELEE" ] || !damageFlags[ "DF_BULLET" ] )                                                      
+	{
+		if ( !damageFlags[ "DF_SNIPER" ]  )                                           
+			return
+	}
+
+	int damageInt = int(damageAmount)
+	if( damageFlags[ "DF_SHIELD_BREAK" ] )
+	{
+		if( !damageFlags[ "DF_SHIELD_DAMAGE" ] )                                                                     
+		{
+			file.damage += float(damageInt)
+			DynStats_UpdateStats_RUI (
+				file.shotsFired,
+				file.damage,
+				file.shotsHit,
+				file.critShotsHit,
+				file.kills
+			)
+			return
+		}
+	}
+
+	file.damage += float(damageInt)
+	file.shotsHit++
+
+	if( damageFlags[ "DF_HEADSHOT" ] )
+	{
+		file.critShotsHit++
+	}
+
+	DynStats_UpdateStats_RUI (
+		file.shotsFired,
+		file.damage,
+		file.shotsHit,
+		file.critShotsHit,
+		file.kills
+	)
+}
+
+void function SCB_DynStats_ResetStats()
+{
+	entity player = GetLocalViewPlayer()
+	EmitSoundOnEntity( player, SFX_DYNSTAT_RESET )
+	DynStats_ResetStats( player )
+}
+
+void function DynStats_ResetStats( entity player )
+{
+	if (!IsValid( player ))
+		return
+
+	file.lastShotsFired = file.shotsFired
+	file.lastDamage = file.damage
+	file.lastShotsHit = file.shotsHit
+	file.lastCritShotsHit = file.critShotsHit
+	file.lastKills = file.kills
+
+	file.shotsFired = 0
+	file.damage = 0
+	file.shotsHit = 0
+	file.critShotsHit = 0
+	file.kills = 0
+
+	if ( file.dynamicStatsRui == null )
+		return
+
+	RuiSetGameTime( file.dynamicStatsRui, "resetTime", ClientTime() )
+
+	DynStats_UpdateStats_RUI (
+		file.shotsFired,
+		file.damage,
+		file.shotsHit,
+		file.critShotsHit,
+		file.kills
+	)
+
+	PIN_CL_Record_DynamicStats_TimeBetweenResets( player )
+}
+
+void function PIN_CL_Record_DynamicStats_TimeBetweenResets( entity player )
+{
+	if( file.lastResetTime == -1 )
+	{
+		                               
+		file.lastResetTime = Time()
+	}
+	else
+	{
+		float timeDelta = Time() - file.lastResetTime
+		file.lastResetTime = Time()
+
+		if( timeDelta > DYNSTATS_MAX_RESETTIMEDELTA )
+		{
+			timeDelta = DYNSTATS_MAX_RESETTIMEDELTA - 1
+		}
+		else if( timeDelta < 0 )
+		{
+			timeDelta = 0
+		}
+		Remote_ServerCallFunction( "PIN_CCB_Record_DynamicStats_TimeBetweenResets", int( timeDelta ))
+	}
+}
+
+void function DynStats_UpdateStats_RUI(  int shotsFired, float damageDone, int shotsHit, int critShotsHit, int kills )
+{
+	if (!(FiringRangeHasDynamicStats()))
+		return
+
+	if( FRC_GetState() != eFiringRangeChallengeState.FR_CHALLENGE_INACTIVE )
+		return
+
+	if ( file.dynamicStatsRui == null )
+		return
+
+	float accuracy                                                         
+	if ( shotsFired != 0 )
+	{
+		accuracy = (float (shotsHit) / float(shotsFired) ) * 100.0
+		if( accuracy > 100.0 )
+			accuracy = 100.0
+	}
+	else
+	{
+		accuracy = 0
+	}
+
+	RuiSetFloat( file.dynamicStatsRui, "accuracy" , accuracy )
+	RuiSetString( file.dynamicStatsRui, "damageDone" , LocalizeAndShortenNumber_Float( damageDone, 5, 2 ) )
+	RuiSetString( file.dynamicStatsRui, "critShots" , LocalizeAndShortenNumber_Int( critShotsHit, 5, 2 ) )
+	RuiSetString(file.dynamicStatsRui, "shotsFired", LocalizeAndShortenNumber_Int( shotsFired, 5, 2 ) )
+	RuiSetString(file.dynamicStatsRui, "kills", LocalizeAndShortenNumber_Int( kills, 5, 2 ) )
+
+	float lastAccuracy
+	if ( file.lastShotsFired != 0 )
+	{
+		lastAccuracy = (float (file.lastShotsHit) / float(file.lastShotsFired) ) * 100.0
+		if( lastAccuracy > 100.0 )
+				lastAccuracy = 100.0
+	}
+
+	RuiSetFloat( file.dynamicStatsRui, "lastAccuracy", lastAccuracy )
+	RuiSetString( file.dynamicStatsRui, "lastDamageDone", LocalizeAndShortenNumber_Float( file.lastDamage, 5, 2 ) )
+	RuiSetString( file.dynamicStatsRui, "lastCritShots", LocalizeAndShortenNumber_Int( file.lastCritShotsHit, 5, 2 ) )
+	RuiSetString (file.dynamicStatsRui, "lastShotsFired", LocalizeAndShortenNumber_Int( file.lastShotsFired, 5, 2 ) )
+	RuiSetString (file.dynamicStatsRui, "lastKills", LocalizeAndShortenNumber_Int( file.lastKills, 5, 2 ) )
+}
+
+void function FR_DymicStats_OnReloadHoldResetStatsController( var button )
+{
+	thread function() : ()
+	{
+		float endTIme = ClientTime() + 1.0
+		RuiSetGameTime( file.dynamicStatsRui, "reloadStartTime", ClientTime() )
+
+		entity player = GetLocalViewPlayer()
+		EmitSoundOnEntity( player, "FiringRangeMu1_UI_Range_Stats_ManualReset_ProgressBar_1P" )
+		while ( InputIsButtonDown(file.resetStatsButton) && Time() < endTIme )
+		{
+			WaitFrame()
+		}
+
+		if ( InputIsButtonDown(file.resetStatsButton) )
+		{
+			SCB_DynStats_ResetStats()
+		}
+		else
+		{
+			RuiSetGameTime( file.dynamicStatsRui, "reloadStartTime", RUI_BADGAMETIME )
+		}
+		StopSoundOnEntity( player, "FiringRangeMu1_UI_Range_Stats_ManualReset_ProgressBar_1P" )
+	}()
+}
+
+void function FR_DymicStats_OnReloadHoldResetStatsPC( entity player )
+{
+	if( !IsValid( player ) )
+		return
+
+	thread function() : ( player )
+	{
+		player.EndSignal( "OnDestroy" )
+
+		float endTIme = ClientTime() + 1.0
+		RuiSetGameTime( file.dynamicStatsRui, "reloadStartTime", ClientTime() )
+
+		EmitSoundOnEntity( player, "FiringRangeMu1_UI_Range_Stats_ManualReset_ProgressBar_1P" )
+		while ( player.IsInputCommandHeld( IN_RELOAD ) && Time() < endTIme )
+		{
+			WaitFrame()
+			if( !IsValid( player ) )
+				return
+		}
+
+		if ( player.IsInputCommandHeld( IN_RELOAD ) )
+		{
+			SCB_DynStats_ResetStats()
+		}
+		else
+		{
+			RuiSetGameTime( file.dynamicStatsRui, "reloadStartTime", RUI_BADGAMETIME )
+		}
+		StopSoundOnEntity( player, "FiringRangeMu1_UI_Range_Stats_ManualReset_ProgressBar_1P" )
+
+	}()
+}
+
+void function DynStats_Show_RUI()
+{
+	if (file.dynamicStatsIsVisible)
+		return
+
+	if ( file.dynamicStatsRui == null )
+		file.dynamicStatsRui = CreateFullscreenPostFXRui( $"ui/dynamic_stats_rui.rpak" )
+
+	RuiSetGameTime( file.dynamicStatsRui, "animateInTime" , ClientTime() )
+	RuiSetBool( file.dynamicStatsRui, "animateInOut" , true )
+	file.dynamicStatsIsVisible = true
+
+	RegisterButtonPressedCallback( file.resetStatsButton, FR_DymicStats_OnReloadHoldResetStatsController )
+	RegisterConCommandTriggeredCallback( "+reload", FR_DymicStats_OnReloadHoldResetStatsPC )
+}
+
+void function DynStats_Hide_RUI()
+{
+	if (!file.dynamicStatsIsVisible)
+		return
+
+	RuiSetGameTime( file.dynamicStatsRui, "animateOutTime" , ClientTime() )
+	RuiSetBool( file.dynamicStatsRui, "animateInOut" , false )
+	file.dynamicStatsIsVisible = false
+
+	DeregisterButtonPressedCallback( file.resetStatsButton, FR_DymicStats_OnReloadHoldResetStatsController )
+	DeregisterConCommandTriggeredCallback( "+reload", FR_DymicStats_OnReloadHoldResetStatsPC )
+}
+#endif          
+                               
+
+  
+                                                            
+	               
+                                                            
+  
+                         
+bool function PlaylistVar_HasFRSettingsHUD()
+{
+	return( GetCurrentPlaylistVarBool( "has_fr_settings_hud", true ) )
+}
+                               
+
+#if CLIENT
+                         
+void function FR_Settings_Toggle_RUI()
+{
+	if( !PlaylistVar_HasFRSettingsHUD() )
+		return
+
+	                                  
+	if( !file.frSetting_ShowRUI )
+	{
+		FR_Settings_Show_RUI()
+	}
+	else
+	{
+		FR_Settings_Hide_RUI()
+	}
+}
+
+void function ServerCallback_FRSettings_Restore_RUI()
+{
+	if( file.frSetting_ShowRUI )
+	{
+		FR_Settings_Show_RUI()
+	}
+	else
+	{
+		FR_Settings_Hide_RUI()
+	}
+}
+
+void function FR_Settings_Show_RUI()
+{
+	if( !PlaylistVar_HasFRSettingsHUD() )
+		return
+
+	file.frSetting_ShowRUI = true
+
+	if (file.frSettings_RUI != null)
+		return
+
+	thread FR_Settings_Show_RUI_Thread()
+}
+
+void function FR_Settings_Show_RUI_Thread()
+{
+	file.frSettings_RUI = CreateFullscreenPostFXRui( $"ui/fr_settings_hud.rpak" )
+	WaitFrame()
+	FRSettings_Client_Update()
+}
+
+void function FR_Settings_Hide_RUI()
+{
+	if( !PlaylistVar_HasFRSettingsHUD() )
+		return
+
+	file.frSetting_ShowRUI = false
+
+	if (file.frSettings_RUI == null)
+		return
+
+	RuiDestroyIfAlive (file.frSettings_RUI)
+	file.frSettings_RUI = null
+
+	FRSettings_Client_Update()
+}
+
+void function FR_DynamicStats_OnDummieKilled()
+{
+	file.kills++
+	DynStats_UpdateStats_RUI (
+		file.shotsFired,
+		file.damage,
+		file.shotsHit,
+		file.critShotsHit,
+		file.kills
+	)
+}
+
+void function ServerCallback_FRSettings_Update_RUI()
+{
+	entity player = GetLocalViewPlayer()
+	FRSettings_Client_Update()
+}
+
+void function NetVarCallback_Changed_Bool( entity player, bool newVal )
+{
+	FRSettings_Client_Update()
+}
+
+void function NetVarCallback_Changed_Int( entity player, int newVal )
+{
+	#if DEV
+		printt( format( "*** %s(): Player == %s", FUNC_NAME(), player.GetPlayerName() ) )
+	#endif
+	FRSettings_Client_Update()
+}
+
+void function NetVarCallback_Changed_RangeMaster( entity player, int newVal )
+{
+	SquadLeader_UpdateAllUnitFramesRui()
+}
+
+void function FRSettings_Client_Update()
+{
+	entity player = GetLocalViewPlayer()
+	string isOn   = ""
+	int settingType
+	bool settingOn
+
+	#if DEV
+		printt( format( "*** %s(): for %s",FUNC_NAME(), player.GetPlayerName()) )
+	#endif
+
+	if (file.frSettings_RUI != null)
+	{
+		bool useConsolePrompts = true
+		#if PC_PROG
+			useConsolePrompts = false
+		#endif
+		RuiSetBool( file.frSettings_RUI,  "useConsolePrompts", useConsolePrompts )
+
+		                 
+		bool infiniteReloads = FRS_NetVar_Get_Bool( player, eFRPSettingType.INFINITERELOADS )
+		bool ffOn = IsTeamRabid( player.GetTeam() )
+		RuiSetBool( file.frSettings_RUI,  "isUnlimitedAmmoOn", infiniteReloads )
+		RuiSetBool( file.frSettings_RUI,  "isFriendlyFireOn", ffOn )
+	}
+	                                    
+
+	                   
+	entity rangeMaster  = RangeMaster_CL_Get()
+	bool isLocalViewPlayerRangeMaster = false
+	if ( IsValid( rangeMaster ) )
+	{
+		string whoIsRMaster = RangeMaster_CL_Get_ChangeString()
+		                                                                                   
+		player.p.frSettings_AllStrs = "\n" + whoIsRMaster + "\n"
+		isLocalViewPlayerRangeMaster = player == rangeMaster
+	}
+
+	player.p.frSettings_AllStrs = player.p.frSettings_AllStrs + Make_TitleString( Localize( "#FRSETTING_LABEL_PERSONAL" ))
+	RunUIScript( "Firing_Range_SetIsRangeMaster", isLocalViewPlayerRangeMaster )
+	RunUIScript( "Firing_Range_SetRangeState", FRC_GetState() )
+	            
+	                                      
+	                                                                    
+	                                                                
+	                                                                                                                       
+	                                                                                                                                         
+
+	                
+	Update_SettingsMenu_Bool( eFRSettingType.SHOWDYNSTATS )
+	
+	                    
+	Update_SettingsMenu_Bool( eFRSettingType.INFINITEMAGS )
+
+	             
+	Update_SettingsMenu_Bool( eFRSettingType.SHOWHITMARKS )
+
+	                                  
+	player.p.frSettings_AllStrs = player.p.frSettings_AllStrs + "\n" + Make_TitleString( Localize( "#FRSETTING_LABEL_FR" ))
+
+	                 
+	Update_SettingsMenu_Bool( eFRSettingType.FRIENDLYFIRE )
+
+	                 
+	Update_SettingsMenu_Int( eFRSettingType.TARGETSPEED )
+
+	                                         
+	                       
+	Update_SettingsMenu_Int( eFRSettingType.FRDUMMIESHIELDLVL )
+
+	                
+	Update_SettingsMenu_Int( eFRSettingType.FRDUMMIESPEED )
+
+	                    
+	Update_SettingsMenu_Int( eFRSettingType.FRDUMMIEMOVEMENT )
+
+	                 
+	Update_SettingsMenu_Int( eFRSettingType.FRDUMMIESTANCE )
+
+                    
+	Update_SettingsMenu_Int( eFRSettingType.FRDUMMIESHOOTING )
+	Update_SettingsMenu_Int( eFRSettingType.FRDUMMIESPAWNDISTS )
+	Update_SettingsMenu_Bool( eFRSettingType.DYNAMICDUMMIESON )
+                         
+
+	#if DEV
+		printt( format( "*** Latest Player Settings: \n%s", player.p.frSettings_AllStrs ) )
+	#endif
+}
+
+void function Update_SettingsMenu_Int( int settingType )
+{
+	entity player = GetLocalViewPlayer()
+	int value = FRS_NetVar_Get_Int( player, settingType )
+	player.p.FRSettings_Ints[ settingType ] <- value
+	RunUIScript( "Firing_Range_SetGeneralSetting", settingType, float( value ) )
+}
+
+void function Update_SettingsMenu_Bool( int settingType )
+{
+	entity player = GetLocalViewPlayer()
+	bool ffOn = false
+
+	                                                                   
+	if( settingType == eFRSettingType.FRIENDLYFIRE )
+	{
+		int team = player.GetTeam()
+		ffOn = IsTeamRabid( team )
+		RunUIScript( "Firing_Range_SetFriendlyFire", float( ffOn ) )
+		return
+	}
+
+	bool settingOn = FRS_NetVar_Get_Bool( player, settingType )
+	player.p.FRSettings_Bools[ settingType ] <- settingOn
+	RunUIScript( "Firing_Range_SetGeneralSetting", settingType, float( settingOn ) )
+}
+
+bool function RangeMaster_AmI()
+{
+	entity player = GetLocalViewPlayer()
+	entity rangeMaster = RangeMaster_CL_Get()
+	
+	return( rangeMaster == player )
+}
+
+entity function RangeMaster_CL_Get()
+{
+	entity player = GetLocalViewPlayer()
+
+	int rangeMasterEHIs = player.GetPlayerNetInt( NETVAR_FR_RANGEMASTER_EHI )
+	entity rangeMaster  = FromEHI( rangeMasterEHIs )
+	return rangeMaster
+}
+
+string function Make_TitleString( string theTitle )
+{
+	return( "\n[[  " + theTitle + "  ]]" )
+}
+
+void function SCB_SettingChangedNotification_InfiniteMags()
+{
+	                                       
+	bool isOn = FRS_NetVar_Get_Bool( GetLocalViewPlayer(), eFRSettingType.INFINITEMAGS )
+	LocalSettings_ChangeNotify( "#NOTIFY_INFINITEMAGS", isOn )
+
+	FRSettings_Client_Update()
+}
+
+void function SCB_SettingChangedNotification_ShowHitMarks()
+{
+	                                       
+	bool isOn = FRS_NetVar_Get_Bool( GetLocalViewPlayer(), eFRSettingType.SHOWHITMARKS )
+	LocalSettings_ChangeNotify( "#NOTIFY_SHOWHITMARKS", isOn )
+
+	FRSettings_Client_Update()
+}
+
+void function LocalSettings_ChangeNotify( string baseString, bool isOn )
+{
+	string onOff = isOn ? Localize( "#SETTING_ON" ) : Localize( "#SETTING_OFF" )
+	vector parmColor  = isOn ? FRIENDLY_COLOR : ENEMY_COLOR
+	AnnouncementMessageRight( GetLocalViewPlayer(), Localize( baseString, onOff ), "", parmColor, $"", 2, "" )
+}
+
+void function SCB_Broadcast_FRBehavior_Change( entity playerThatChanged, int behaviorType, bool value )
+{
+	if( !IsValid( playerThatChanged ) || !playerThatChanged.IsPlayer())
+		return
+
+	                               
+	string notifierName = playerThatChanged.GetPlayerName()
+	if( notifierName == "" )
+		return
+
+	vector playerColor = GetKeyColor( COLORID_MEMBER_COLOR0, playerThatChanged.GetTeamMemberIndex())
+
+	                
+	bool isOn = value
+	string onOff = isOn ? Localize( "#FRSETTING_ON" ) : Localize( "#FRSETTING_OFF" )
+	vector valueColor  = isOn ? FRIENDLY_COLOR : ENEMY_COLOR
+
+	Assert( (( behaviorType <= eDummieBehaviorType.COUNT_ ) && ( behaviorType >= 0 )), format( "%s(): Behavior Type Out of Range.", FUNC_NAME() ) )
+	
+	                   
+	table< int, string > settingNamesByType
+	string settingName = ""
+	string settingNameLocalized
+	settingNamesByType[ eDummieBehaviorType.STAYINPLACE ] 		<- "#DUMMIE_SETTINGNAME_STAYINPLACE"
+	settingNamesByType[ eDummieBehaviorType.STRAFE ] 			<- "#DUMMIE_SETTINGNAME_STRAFE"
+	settingNamesByType[ eDummieBehaviorType.CANSTAND ] 			<- "#DUMMIE_SETTINGNAME_CANSTAND"
+	settingNamesByType[ eDummieBehaviorType.CANCROUCH ] 		<- "#DUMMIE_SETTINGNAME_CANCROUCH"
+	settingNamesByType[ eDummieBehaviorType.RANDINTERVALS ] 	<- "#DUMMIE_SETTINGNAME_RANDINTERVALS"
+
+	settingName = settingNamesByType[ behaviorType ]
+	settingNameLocalized = Localize( settingName )
+
+	                          
+	vector baseColor = < 219, 219, 219 >
+	#if DEV
+		printt( format( "%s(): setting changed == %s", FUNC_NAME(), settingNameLocalized ) )
+	#endif
+	EmitSoundOnEntity( GetLocalViewPlayer(), SFX_SETTING_CHANGE_NOTIFY )
+	Obituary_Print_Localized( Localize( "#OBIT_SETTINGCHANGE_NOTIFY", notifierName, settingNameLocalized, onOff ), playerColor, valueColor )
+
+	FRSettings_Client_Update()
+}
+
+string function RangeMaster_CL_Get_ChangeString()
+{
+	entity player = GetLocalViewPlayer()
+	string rangeMasterChange_Notify = ""
+
+	int rangeMasterEHI = player.GetPlayerNetInt( NETVAR_FR_RANGEMASTER_EHI )
+
+	if( player.GetEncodedEHandle() == rangeMasterEHI )
+	{
+		rangeMasterChange_Notify = Localize( "#FR_RANGEMASTER_YOU_ARE" )
+	}
+	else
+	{
+		entity rangeMaster = RangeMaster_CL_Get()
+		if( IsValid( rangeMaster ) )
+			rangeMasterChange_Notify =  Localize( "#FR_RANGEMASTER_IS", rangeMaster.GetPlayerName() )
+	}
+
+	return rangeMasterChange_Notify
+}
+
+void function SCB_Broadcast_RangeMaster_Change()
+{
+	thread SCB_Broadcast_RangeMaster_Change_Thread()
+}
+
+void function SCB_Broadcast_RangeMaster_Change_Thread()
+{
+	entity localPlayer = GetLocalViewPlayer()
+	localPlayer.EndSignal( "OnDeath" )
+
+	wait ( 2.0 )                                     
+
+	vector titleColor  = < 255, 255, 255 >
+	string rangemaster_notify = RangeMaster_CL_Get_ChangeString()
+
+	if( rangemaster_notify != "" )
+		AnnouncementMessage( localPlayer, rangemaster_notify, "", titleColor, ANNOUNCEMENT_STYLE_GENERIC_WARNING )
+
+	FRSettings_Client_Update()
+	SquadLeader_UpdateAllUnitFramesRui()
+}
+
+                               
+
+                   
+void function ServerToClient_DoPresentation()
+{
+	if ( GetCurrentPlaylistVarBool( "survival_staging_high_point_enabled", true ) )
+	{
+		thread DoRealization_Thread()
+		thread DoPresentation_Thread()
+	}
+}
+
+void function DoRealization_Thread()
+{
+	entity player = GetLocalViewPlayer()
+
+	EndSignal( player, "OnDeath", "OnDestroy" )
+
+	entity rotator = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", player.EyePosition(), <0,0,0> )
+	entity model = CreateClientSidePropDynamic( player.EyePosition() + <0,0,150>, <0,0,0>, $"mdl/creatures/bird/bird.rmdl" )
+
+	OnThreadEnd( void function() : ( rotator, model  ) {
+		model.Destroy()
+		rotator.Destroy()
+	} )
+	rotator.NonPhysicsSetRotateModeLocal( true )
+	rotator.NonPhysicsRotate( <0,0,-1>, 50 )
+
+	vector cameraForwardFlatNormalized = Normalize(FlattenVec(AnglesToForward(player.CameraAngles())))
+	vector offset = cameraForwardFlatNormalized * 400 + <0,0,300>
+
+	vector forwardAngle = VectorToAngles( cameraForwardFlatNormalized )
+	vector rotatedAngle = AnglesCompose( forwardAngle, <0, -100, 35> )
+
+	entity mover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", player.CameraPosition(), <0,0,0> )
+	mover.SetParent( rotator )
+	mover.NonPhysicsSetMoveModeLocal(true)
+
+	mover.SetLocalAngles( rotatedAngle )
+	mover.SetLocalOrigin( offset )
+
+	model.SetParent( mover )
+	model.Anim_Play( "Bird_fly_cycle_long_no_root_motion" )
+
+	const float HALF_ROTATE_TIME = 6
+	const float EASE_IN_TIME = 1
+	const float START_STAGE_TIME = HALF_ROTATE_TIME + ( EASE_IN_TIME / 2 )
+	const float TOTAL_ROTATE_TIME = HALF_ROTATE_TIME + START_STAGE_TIME
+	wait TOTAL_ROTATE_TIME - 1
+}
+
+void function DoPresentation_Thread()
+{
+	entity player = GetLocalViewPlayer()
+
+	EndSignal( player, "OnDeath", "OnDestroy" )
+
+	SCB_FiringRange_EnableCharacterChange( false )
+
+	bool needToShowStats = false
+
+	                             
+	needToShowStats = file.dynamicStatsIsVisible
+	if( needToShowStats )
+	{
+		DynStats_Hide_RUI()
+	}
+
+	bool needToRestoreSettings = file.frSetting_ShowRUI
+	if ( file.frSetting_ShowRUI )
+	{
+		FR_Settings_Hide_RUI()
+	}
+
+	EmitSoundOnEntity( player, "FiringRangeMu1_HighPoint_1P" )
+
+	entity rotator = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", player.EyePosition(), <0,0,0> )
+
+	OnThreadEnd( void function() : ( player, rotator, needToShowStats, needToRestoreSettings ) {
+
+		SCB_FiringRange_EnableCharacterChange( true )
+
+		if( needToShowStats )
+		{
+			DynStats_Show_RUI()
+		}
+		if ( needToRestoreSettings )
+		{
+			FR_Settings_Show_RUI()
+		}
+
+		player.ClearMenuCameraEntity()
+		rotator.Destroy()
+	} )
+
+	rotator.NonPhysicsSetRotateModeLocal( true )
+
+	const float HALF_ROTATE_TIME = 6
+	const float EASE_IN_TIME = 1
+	const float START_STAGE_TIME = HALF_ROTATE_TIME + ( EASE_IN_TIME / 2 )
+	rotator.NonPhysicsRotateTo( <0,180,0>, START_STAGE_TIME, EASE_IN_TIME, 0 )
+	entity mover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", player.CameraPosition(), player.CameraAngles() )
+	mover.SetParent( rotator )
+	vector endPos = mover.GetLocalOrigin()
+	mover.NonPhysicsSetMoveModeLocal(true)
+	vector cameraForwardFlatNormalized = Normalize(FlattenVec(AnglesToForward(player.CameraAngles())))
+	mover.NonPhysicsMoveTo( (cameraForwardFlatNormalized * -300) + <0, 0, 300>, 3, 1, .5 )
+	entity camera = CreateClientSidePointCamera( mover.GetOrigin(), mover.GetAngles(), player.GetFOV() )
+	camera.SetParent( mover )
+	player.SetMenuCameraEntity( camera )
+	player.SetMenuCameraUseGameExposure()
+
+	vector focusPoint = player.CameraPosition() + (AnglesToForward(player.CameraAngles()) * Distance( player.CameraPosition(), player.EyePosition() ) )
+	entity cameraFocusPoint = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", focusPoint, <0,0,0> )
+	cameraFocusPoint.NonPhysicsMoveTo( focusPoint + <0, 0, 150>, 3, 1, .5 )
+
+	                                                                                                                                            
+
+	float startTime = Time()
+	const float TOTAL_ROTATE_TIME = HALF_ROTATE_TIME + START_STAGE_TIME
+	float endTime = startTime + TOTAL_ROTATE_TIME
+
+	bool finshedStartStage = false
+	float startStageEndTime = Time() + START_STAGE_TIME
+
+	bool startedEndStage = false
+	const float END_STAGE_TIME = 2
+	float endStageStartTime = Time() + TOTAL_ROTATE_TIME - END_STAGE_TIME
+	while ( Time() < endTime )
+	{
+		if ( !finshedStartStage && Time() >= startStageEndTime )
+		{
+			finshedStartStage = true
+			rotator.NonPhysicsRotate( <0,0,1>, 30 )
+		}
+
+		if ( !startedEndStage && Time() >= endStageStartTime )
+		{
+			startedEndStage = true
+			cameraFocusPoint.NonPhysicsMoveTo( focusPoint, END_STAGE_TIME, 1, .5 )
+			mover.NonPhysicsMoveTo( endPos, END_STAGE_TIME, 1, .5 )
+		}
+
+		vector cameraToCameraFocus = Normalize(cameraFocusPoint.GetOrigin() - mover.GetOrigin())
+
+		camera.SetAngles( VectorToAngles(cameraToCameraFocus) )
+		                                                                                                                        
+		                                                                                   
+		WaitFrame()
+	}
+}
+                        
+#endif         
+
+  
+                   
+          
+                   
+  

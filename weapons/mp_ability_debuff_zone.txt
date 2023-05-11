@@ -1,0 +1,200 @@
+#base _base_ability_tactical.txt
+
+WeaponData
+{
+	// General
+	printname                                                   #WPN_DEBUFF_ZONE
+	shortprintname				                                #WPN_DEBUFF_ZONE_SHORT
+	description 			                                    #WPN_DEBUFF_ZONE_DESC
+	longdesc 				                                    #WPN_DEBUFF_ZONE_LONGDESC
+											                    
+	menu_icon                                                   rui/hud/tactical_icons/tactical_ballistic
+    hud_icon					                                rui/hud/tactical_icons/tactical_ballistic
+											                    
+	// Animation                                                
+	fire_anim_rate                                              1
+											                    
+	// Models                                                   
+	viewmodel                                                   mdl/Weapons/ballistic_pistol/ptpov_ballistic_pistol.rmdl
+    playermodel						                            mdl/Weapons/ballistic_pistol/w_ballistic_pistol.rmdl
+    projectilemodel					                            mdl/Weapons/ballistic_tact_projectile.rmdl
+											                    
+	// Offhand                                                  
+    offhand_default_inventory_slot			                    0
+											                    
+	// Character-Specific                                       
+    fire_in_real_world_while_phased			                    1
+    trophy_system_ignores                                       none
+											                    
+	// Script - Callbacks                                       
+	OnWeaponTossPrep                                            OnWeaponTossPrep_DebuffZone
+	OnWeaponTossReleaseAnimEvent			                    OnWeaponTossReleaseAnimEvent_DebuffZone
+	OnProjectileCollision					                    OnProjectileCollision_DebuffZone
+	OnWeaponToss                                                OnWeaponToss_DebuffZone
+	OnWeaponDeactivate                                          OnWeaponDeactivate_DebuffZone
+	OnWeaponRegenEnd                                            OnWeaponRegenEndGeneric
+	OnClientAnimEvent                                           OnClientAnimEvent_DebuffZone
+	OnWeaponTossCancel                                          OnWeaponTossCancel_DebuffZone
+											                    
+	// Behavior - Animation                                     
+	max_cook_time							                    -1
+	deploy_time 							                    0.10
+	sprintcycle_time						                    .55
+	toss_time								                    1.00
+	toss_hides_world_model                                      0
+											                    
+	// Behavior - Firing                                        
+	fire_mode   							                    offhand
+	offhand_cancelled_by_melee				                    1
+	offhand_active_slot                                         altHand
+	fast_swap_to			                                    1
+    fast_swap_from                                              1
+	fire_rate   							                    1000
+    zoom_effects							                    0
+	critical_hit							                    0
+	allow_headshots 						                    0
+	vortex_refire_behavior  				                    grenade
+	cooldown_type							                    ammo_instant
+    is_toss_weapon							                    1
+	impulse_force   						                    0
+	allow_empty_fire						                    0
+											                    
+	// Grenade                                                  
+    grenade_fuse_time						                    0
+    grenade_ignition_time                                       5.0
+    start_fuse_on_launch                                        0
+    grenade_orient_to_velocity				                    1
+    show_grenade_indicator					                    0
+    show_grenade_indicator_to_owner			                    0
+    grenade_can_roll                                            0
+    grenade_touch_triggers_on_impact		                    1
+
+    stick_pilot                                                 0
+    stick_npc                                                   0
+    stick_drone                                                 0
+											                    
+	// Effects                                                  
+	impact_effect_table 					                    tac_ballistic
+	bounce_effect_table 					                    bounce_small
+	projectile_trail_attachment 				                "fx_bullet_back"
+	projectile_trail_effect_0_1p			                    P_clbr_tac_trail
+	projectile_trail_effect_0_3p			                    P_clbr_tac_trail
+	projectile_adjust_to_gun_barrel			                    1
+	projectile_adjust_to_hand				                    0
+	fx_muzzle_flash_view					                    P_clbr_tac_muzzleflash_1p
+    fx_muzzle_flash_world					                    P_clbr_tac_muzzleflash_3p
+    fx_muzzle_flash_attach					                    muzzle_flash
+	alt_hand_3p_attach_name 			                        L_HAND
+
+											                    
+	// Sounds                                                   
+	sound_throw_1p							                    Ballistic_Tac_Fire_1p
+	sound_deploy_1p							                    Maggie_Tac_Deploy_1P
+	sound_throw_3p							                    Ballistic_Tac_Fire_3p
+	sound_deploy_3p							                    Maggie_Tac_Deploy_3p
+	sound_grenade_projectile				                    Ballistic_Tac_Projectile_3p
+	idle_sound_player_1p					                    Ballistic_Tac_ADS_Idle_1p
+											                    
+	// Damage - When Used by Players                            
+	damage_type 							                	burn
+	damage_near_distance					                	20
+	damage_far_distance 					                	20
+	damage_near_value   					                	20
+	damage_far_value						                	20
+											                    
+	// Reload                                                   
+	reload_enabled  						                	0
+	allow_empty_click   					                	1
+	empty_reload_only   					                	0
+											                    
+	// Behavior - Aim Assist                                    
+	aimassist_disable_hipfire				                	1
+	aimassist_disable_ads					                	1
+											                    
+	// Damage - Distance                                        
+	red_crosshair_range 					                	0
+											                    
+	// Projectile                                               
+    projectile_launch_speed				                        1
+    projectile_ricochet_max_count                               5
+    projectile_ignores_vortex				                    fall_vortex
+    projectile_lifetime                                         5.0
+
+	// Ammo                                                     
+	ammo_suck_behavior                                          primary_weapons
+	ammo_drains_to_empty_on_fire			                	0
+	ammo_clip_size   						                	150
+    ammo_default_total						                    150
+    ammo_display							                	bar
+    ammo_min_to_fire						                	150
+    ammo_per_shot							                	150
+    ammo_stockpile_max						                    150
+    regen_ammo_refill_rate					                    6
+    regen_ammo_refill_start_delay			                	0.0
+											                    
+	// View Kick                                                                                             
+	viewkick_spring                                             pistol
+	                                  
+	// Rumble                                            
+	rumble  		                                            3
+
+	Mods
+	{
+	    survival_armor_cooldown_mod
+        {
+            regen_ammo_refill_rate                              "*1.25"
+        }
+
+                            
+                               
+         
+                                                        
+                                                
+                                                
+         
+           
+	}
+
+	active_crosshair_count				                        1
+	rui_crosshair_index					                        0
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			adjustedSpread				                        weapon_spread
+			adsFrac 					                        player_zoomFrac
+			isSprinting					                        player_is_sprinting
+			isReloading					                        weapon_is_reloading
+			teamColor					                        crosshair_team_color
+			isAmped						                        weapon_is_amped
+			crosshairMovementX                                  crosshair_movement_x
+			crosshairMovementY                                  crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			ui					                                ui/crosshair_lockon
+			base_spread			                                0.0
+			Args
+			{
+				isFiring				                        weapon_is_firing
+				charge					                        weapon_script_float_0
+				playerFov                                       player_fov
+			}
+		}
+
+		Crosshair_Hopup
+		{
+			ui					                                ui/crosshair_alternator_charged
+			base_spread			                                0.0
+			Args
+			{
+				isFiring				                        weapon_is_firing
+				charge					                        player_chargeFrac
+				playerFov                                       player_fov
+
+			}
+		}
+	}
+}

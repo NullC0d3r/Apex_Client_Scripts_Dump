@@ -1,0 +1,33 @@
+WeaponData
+{
+	"kinetic_load_delay"                        "0.14" //0.35
+    "kinetic_load_additive_delay"               "0.9" //0.5
+    "kinetic_load_max_delay"                    "0.9" //3
+    "kinetic_ammo_to_load"                      "1"
+    "kinetic_load_sfx"                          "weapon_peacekeeper_reload_kinetic"
+
+	Mods
+	{
+		shotgun_bolt_l1
+		{
+			"fire_rate" 	"*1.15"
+		}
+
+		shotgun_bolt_l2
+		{
+			"fire_rate" 	"*1.25"
+		}
+
+		shotgun_bolt_l3
+		{
+			"fire_rate" 	"*1.35"
+		}
+
+                         
+		shotgun_bolt_l4
+		{
+			"fire_rate" 	"*1.35"
+		}
+      
+	}
+}

@@ -1,0 +1,9 @@
+WeaponData
+{
+	ap_leghead_ratio_easy               "0.4"
+	ap_leghead_ratio_hard               "0.7"
+	ap_aim_accuracy_easy                "0.3"
+	ap_aim_accuracy_hard                "0.25"
+	ap_zoom_accuracy_easy               "0.0"
+	ap_zoom_accuracy_hard               "0.0"
+}

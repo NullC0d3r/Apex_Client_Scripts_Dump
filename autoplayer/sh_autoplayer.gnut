@@ -1,0 +1,431 @@
+global function AutoPlayer_Init
+global function AutoPlayer_DropBackpackItem
+global function AutoPlayer_DropEquipment
+global function AutoPlayer_HasMobileRespawnBeacon
+global function AutoPlayer_EquipMobileRespawnBeacon
+global function AutoPlayer_GetCarePackagePlacementPosition
+global function AutoPlayer_CloseCraftingMenu
+global function AutoPlayer_LootItemFromDeathbox
+global function AutoPlayer_ForceLegend
+global function AutoPlayer_GetPlayerNetInt
+global function AutoPlayer_HasVaultKey
+global function AutoPlayer_TranslateLootType
+global function AutoPlayer_GetAllLootData
+global function AutoPlayer_GetForbiddenCharacters
+global function AutoPlayer_GetEquipmentSlotEquippedTier
+global function AutoPlayer_GetCurrentAttachmentTier
+#if SERVER
+                                                       
+#endif
+
+struct
+{
+	array< ItemFlavor >	forbiddenCharacters
+} file
+
+void function AutoPlayer_Init()
+{
+	AddCallback_EntitiesDidLoad( AutoPlayer_EntitiesDidLoad )
+	AddCallback_GameStateEnter( eGameState.Postmatch, AutoPlayer_GameStatePostmatch )
+
+	#if SERVER
+		                                                                                        
+		                                                  
+	#endif
+
+                        
+                      
+   
+                                                                                  
+   
+       
+
+	array< string > allowedChars = split( GetCurrentPlaylistVarString( "ap_characters_allowed", " " ), WHITESPACE_CHARACTERS )
+
+	if ( allowedChars.len() > 0 )
+	{
+		file.forbiddenCharacters = clone Loadout_Character().validItemFlavorList
+
+		foreach ( string allowedChar in allowedChars )
+		{
+			if ( IsValidItemFlavorCharacterRef( allowedChar ) )
+			{
+				file.forbiddenCharacters.fastremovebyvalue( GetItemFlavorByCharacterRef( allowedChar ) )
+			}
+		}
+	}
+	#if AUTO_PLAYER_DEV
+		#if CLIENT
+			AddCallback_GameStateEnter( eGameState.WinnerDetermined, AutoPlayer_GameStateWinnerDetermined )
+		#elseif SERVER
+			                                                                          
+		#endif
+	#endif
+}
+
+array< ItemFlavor > function AutoPlayer_GetForbiddenCharacters()
+{
+	return file.forbiddenCharacters
+}
+
+int function AutoPlayer_GetEquipmentSlotEquippedTier( entity player, string slot )
+{
+	LootData currentEquipment = EquipmentSlot_GetEquippedLootDataForSlot( player, slot )
+
+	return currentEquipment.tier
+}
+
+void function AutoPlayer_PickLoadoutCallback()
+{
+	#if SERVER
+		                                               
+		                                   
+		                                    
+
+		                   
+			                                                                                
+			                         
+			 
+				                                                                                
+				                                                                                     
+				                                                   
+				 
+					                                                                                            
+					                                                           
+
+					                                                                                                              
+					                                                       
+					                                              
+				 
+			 
+		      
+
+		                                                                       
+		                                             
+		 
+			                                                              
+			 
+				                                                                                     
+
+				                         
+				 
+					                                                                     
+					                                             
+					                                                                                       
+				 
+			 
+		 
+	#endif
+}
+
+void function AutoPlayer_DropBackpackItem( entity player, string item, int dropCount )
+{
+	#if SERVER
+		                                                    
+	#else
+		LootData data = SURVIVAL_Loot_GetLootDataByRef( item )
+		Remote_ServerCallFunction( "ClientCallback_Sur_DropBackpackItem", data.index, dropCount )
+	#endif
+}
+
+void function AutoPlayer_DropEquipment( entity player, string slot )
+{
+	#if SERVER
+		                                            
+	#else
+		EquipmentAction( eLootAction.DROP, slot )
+	#endif
+}
+
+                                                                 
+bool function AutoPlayer_HasVaultKey( entity player )
+{
+	if ( player.GetPlayerNetBool( "hasDataKnife" ) )
+		return true
+                   
+	else if ( GetCurrentPlaylistVarBool( "loot_vaults_enabled", true ) && player.GetPlayerNetBool( "hasShipKeycard" ) )
+		return true
+                         
+
+	return false
+}
+
+void function AutoPlayer_EquipMobileRespawnBeacon( entity player )
+{
+	entity gadget = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_GADGET )
+                                
+                                                                                                                                                                   
+      
+	if( IsValid( gadget ) && gadget.GetWeaponClassName() == "mp_ability_mobile_respawn_beacon" )
+       
+	{
+		entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+
+		if ( activeWeapon != gadget )
+		#if SERVER
+			 
+				                                                                                          
+			 
+		#else
+			{
+				LootData data = SURVIVAL_Loot_GetLootDataByRef( gadget.GetWeaponClassName() )
+				Remote_ServerCallFunction( "ClientCallback_Sur_EquipGadget", data.index )
+			}
+		#endif
+	}
+}
+
+bool function AutoPlayer_HasMobileRespawnBeacon( entity player )
+{
+	entity gadget = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_GADGET )
+
+
+                                
+                                                                                                                                                                   
+      
+	if( IsValid( gadget ) && gadget.GetWeaponClassName() == "mp_ability_mobile_respawn_beacon" )
+       
+		return true
+
+	return false
+}
+
+vector function AutoPlayer_GetCarePackagePlacementPosition( entity player )
+{
+	CarePackagePlacementInfo placementInfo = GetCarePackagePlacementInfo( player )
+
+	return placementInfo.origin
+}
+
+void function AutoPlayer_CloseCraftingMenu( entity player )
+{
+	#if SERVER
+		                                             
+			                                           
+	#endif
+}
+
+void function AutoPlayer_LootItemFromDeathbox( entity player, entity item, entity deathBox )
+{
+	#if SERVER
+		                                                              
+	#endif
+
+	#if CLIENT
+		Remote_ServerCallFunction( "ClientCallback_PickupSurvivalItem", item, 0, deathBox )
+	#endif
+}
+
+void function AutoPlayer_ForceLegend( entity player, string legendReadableRef )
+{
+	#if SERVER
+		                                                                       
+		                                                                           
+	#endif
+}
+
+int function AutoPlayer_GetPlayerNetInt( entity player, string name )
+{
+	return player.GetPlayerNetInt( name )
+}
+
+#if SERVER
+                                                                                       
+ 
+	                                                    
+
+	                                  
+	                      
+		      
+
+	                                                                              
+	                                                              
+	                                                    
+	                                    
+
+	                    
+		             
+ 
+#endif          
+
+                       
+                                            
+ 
+                                              
+ 
+
+                                                    
+ 
+                                                                                                         
+        
+
+                                              
+  
+                                          
+   
+             
+                                    
+         
+
+                                  
+                                                   
+
+                                                         
+    
+                                                                                     
+                                                                                                               
+
+                               
+     
+               
+                                                                 
+                   
+                                                                                   
+           
+     
+    
+
+                                                                                                               
+    
+                                       
+
+              
+                                                  
+                  
+                                                                       
+          
+    
+   
+  
+ 
+                             
+
+int function AutoPlayer_TranslateLootType( int lootType )
+{
+	switch ( lootType )
+	{
+		case eLootType.MAINWEAPON:
+			return AUTO_PLAYER_LOOT_TYPE_WEAPON
+
+		case eLootType.AMMO:
+			return AUTO_PLAYER_LOOT_TYPE_AMMO
+
+		case eLootType.ARMOR:
+			return AUTO_PLAYER_LOOT_TYPE_ARMOR
+
+		case eLootType.HELMET:
+			return AUTO_PLAYER_LOOT_TYPE_HELMET
+                      
+		case eLootType.DATAKNIFE:
+			return AUTO_PLAYER_LOOT_TYPE_VAULTKEYCARD
+      
+                  
+		case eLootType.SHIPKEYCARD:
+			return AUTO_PLAYER_LOOT_TYPE_VAULTKEYCARD
+      
+		case eLootType.ATTACHMENT:
+			return AUTO_PLAYER_LOOT_TYPE_ATTACHMENT
+
+		case eLootType.HEALTH:
+			return AUTO_PLAYER_LOOT_TYPE_HEALTH
+
+		case eLootType.BACKPACK:
+			return AUTO_PLAYER_LOOT_TYPE_BACKPACK
+
+		case eLootType.ORDNANCE:
+			return AUTO_PLAYER_LOOT_TYPE_ORDNANCE
+
+		case eLootType.INCAPSHIELD:
+			return AUTO_PLAYER_LOOT_TYPE_INCAPSHIELD
+
+		case eLootType.GADGET:
+			return AUTO_PLAYER_LOOT_TYPE_GADGET
+	}
+
+	return AUTO_PLAYER_LOOT_TYPE_OTHER
+}
+
+string function AutoPlayer_GetAllLootData()
+{
+	string allLootData
+
+	int i = 0
+	while ( SURVIVAL_Loot_IsLootIndexValid( i ) )
+	{
+		LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( i )
+
+		allLootData += lootData.ref + ","
+		allLootData += lootData.tier.tostring() + ","
+		allLootData += AutoPlayer_TranslateLootType( lootData.lootType ).tostring() + ","
+
+		if ( lootData.ref in eAmmoPoolType )
+		{
+			allLootData += eAmmoPoolType[ lootData.ref ].tostring() + ""
+		}
+		else
+		{
+			allLootData += "-1"
+		}
+
+		if ( lootData.lootType == eLootType.MAINWEAPON )
+		{
+			allLootData += ","
+
+			bool added = false
+
+			foreach ( attachmentPoint in lootData.supportedAttachments )
+			{
+				array< string > attachmentRefs
+
+				array< LootData > attachments = SURVIVAL_Loot_GetByType( eLootType.ATTACHMENT )
+				foreach ( attachmentData in attachments )
+				{
+					if ( !CanAttachmentEquipToAttachPoint( attachmentData.ref, attachmentPoint ) )
+						continue
+
+					if ( !CanAttachToWeapon( attachmentData.ref, lootData.ref ) )
+						continue
+
+					if ( attachmentData.lootTags.contains( "FakeHopup" ) )
+						continue
+
+					attachmentRefs.append( attachmentData.ref )
+				}
+
+				foreach ( attachmentRef in attachmentRefs )
+				{
+					LootData attachmentLootData = SURVIVAL_Loot_GetLootDataByRef( attachmentRef )
+					allLootData += attachmentLootData.index.tostring() + ";"
+					added = true
+				}
+			}
+
+			if ( !added )
+				allLootData += "-1"
+		}
+
+		allLootData += "|"
+
+		i++
+	}
+
+	return allLootData
+}
+
+int function AutoPlayer_GetCurrentAttachmentTier( int lootIndex, entity weapon )
+{
+	LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( lootIndex )
+
+	LootData attachedData
+	attachedData.tier = -1
+
+	string attachPoint = GetAttachPointForAttachmentOnWeapon( GetWeaponClassNameWithLockedSet( weapon ), lootData.ref )
+	string installed = GetInstalledWeaponAttachmentForPoint( weapon, attachPoint )
+
+	if ( SURVIVAL_Loot_IsRefValid( installed ) )
+	{
+		attachedData = SURVIVAL_Loot_GetLootDataByRef( installed )
+	}
+
+	return attachedData.tier
+}

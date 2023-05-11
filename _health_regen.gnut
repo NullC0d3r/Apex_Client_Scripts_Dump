@@ -1,0 +1,669 @@
+global function HealthRegen_Init
+global function HealthRegen_RegisterNetworking
+
+#if CLIENT
+global function HealthRegen_ServerCallback_RegenCancelEvent
+#endif
+
+global const float REGEN_START_DELAY_DEFAULT = 0.5
+global const float REGEN_DAMAGE_DELAY_DEFAULT = 6.0
+
+#if SERVER
+                                       
+                                       
+                                  
+                                         
+
+                                               
+                                                
+                                                     
+
+                                                                       
+                                                                       
+                                                                       
+                                                          
+                                                                  
+                                   		                           
+                                   		                           
+
+                        
+ 
+	        
+	        
+	         
+	                       
+                
+                        
+       
+ 
+#endif
+
+                                                                                                                                                  
+struct {
+	#if SERVER
+		                                                                      
+		                                                                                 
+
+		                                                                                   
+		                                       
+		                                 
+	#endif
+
+	#if CLIENT
+		var healthRegenRui
+		float healthRegenDelayTime
+	#endif
+} file
+
+void function HealthRegen_Init()
+{
+#if SERVER
+	                                                                            
+	                                         
+	                                            
+#endif
+
+	if ( !GetIsModeHealthRegenActive() )
+		return
+
+	RegisterSignal( "HealthRegen_OnDamaged" )
+	RegisterSignal( "HealthRegen_OnDisconnect" )
+
+#if CLIENT
+	file.healthRegenDelayTime = GetCurrentPlaylistVarFloat( "mode_health_regen_delay", REGEN_DAMAGE_DELAY_DEFAULT )
+	AddCallback_OnPlayerDisconnected( HealthRegen_OnPlayerDisconnected )
+	AddCreateCallback( "player", HealthRegen_OnPlayerSpawned )
+	AddCallback_GameStateEnter( eGameState.Postmatch, HealthRegen_OnGameState_Ending )
+	AddLocalPlayerTookDamageCallback( HealthRegen_OnLocalPlayerDamaged )
+#endif
+}
+
+void function HealthRegen_RegisterNetworking()
+{
+	if ( !GetIsModeHealthRegenActive() )
+		return
+
+	Remote_RegisterClientFunction( "HealthRegen_ServerCallback_RegenCancelEvent" )
+}
+
+bool function IsHealActive( entity player )
+{
+	return StatusEffect_HasSeverity( player, eStatusEffect.stim_visual_effect )
+}
+
+#if SERVER
+                                    
+                                                                                                                                                                                                                                                                                                                     
+ 
+	                               
+	                                           
+
+	                                                                                           
+	                           
+	                                                                   
+
+	                                                          
+	                                                               
+	                       
+
+	                                                                
+		                        
+		 
+			                                                                        
+			                                                                    
+			                                   
+				                                                                                      
+		 
+	   
+
+	                                  
+	                                                                                                              
+	                                                                                                   
+	                                                                                                                        
+ 	                                                                                                                                                     
+ 	                                                                                                                                      
+ 	                                                                   
+ 	                                                                                                                
+ 	                                                                                                                                                     
+ 	                       
+ 	                                                                                                                       
+ 	                                                                                          
+ 	                                                                                   
+ 	  
+	                                                                                                                             
+                        
+                                
+                                  
+       
+
+	                                                        
+	 
+		                                                                          
+		                                                                           
+		                                                                                   
+			                                                                              
+	 
+	                                                                                                            
+		                                                
+	                    
+
+	                           
+	 
+		                         
+		                         
+		 
+			                                
+			                
+			                                                                    
+			        
+		 
+
+		                         
+		 
+			                                
+			                
+			                                                                    
+			        
+		 
+
+		                                     
+		 
+			                                
+			                
+			                                                                    
+			        
+		 
+
+		                                                          
+		 
+			                                
+			                
+			                                                                    
+			        
+		 
+
+		                              
+		 
+			                                
+			                
+			                                                                    
+			        
+		 
+
+		                                                                            
+		 
+			                                
+			                
+			                                                                    
+			        
+		 
+
+		                                     
+		                            
+			                             
+
+		                              
+
+		                              
+		 
+                                 
+				                                                                                   
+				                           
+				 
+					                                                                           
+						        
+				 
+         
+			                                      
+			 
+				                                
+				                
+				                          
+				 
+					                                                                    
+					        
+				 
+				                                                                   
+				 
+					                                                                    
+					        
+				 
+			 
+			                                      
+			 
+				                                                       
+				 
+					                                                                                                                                
+					                            
+					                                      
+					                                                      
+
+					                                                                             
+					                                                                          
+					                                                                      
+				 
+
+				                                                                   
+				                                                                
+				                                                                        
+				                                                                                                                                                                                            
+				                                                                   
+				        
+			 
+
+		 
+		                                                                                 
+		 
+			                                                              
+			 
+				                                                                           
+                   
+                                                              
+      
+                                                    
+                       
+                                                        
+                                                               
+                                                                                            
+      
+          
+				                                                                                                  
+				                                                                  
+
+				                       
+				 
+					                    
+						                                                                               
+					    
+						                                         
+
+					                                                                   
+				 
+				    
+				 
+					                                                                    
+				 
+			 
+		 
+	 
+ 
+#endif
+
+#if CLIENT
+void function HealthRegen_OnLocalPlayerDamaged( float damage, vector damageOrigin, int damageType, int damageSourceId, entity attacker )
+{
+	entity player = GetLocalClientPlayer()
+	if ( !IsValid( player ) )
+		return
+
+	if ( !IsAlive( player ) || Bleedout_IsBleedingOut( player ) )
+		return
+
+	if ( player.GetHealth() == player.GetMaxHealth() )
+		return
+
+	thread HealthRegen_RegenTriggerNotice_Thread( false )
+}
+#endif
+
+#if SERVER
+                                                             
+ 
+	                                                      
+		      
+	                                                  
+	                                                                             
+	                                                    
+	  	                    
+		                       
+ 
+#endif
+
+#if SERVER
+                                                                                                     
+ 
+	                                         
+	 
+		                                                                 
+		                                                   
+		 
+			                                                       
+				                                                                        
+
+			                                           
+		 
+	 
+	    
+	 
+		                                                                    
+		                                         
+		                                                                 
+		                                                                       
+	 
+ 
+#endif
+
+#if SERVER
+                                                                 
+ 
+	                                                                   
+
+                          
+		                                                                                                                                                                       
+		 
+			                      
+		                                                                                                       
+		 
+			                                        
+		 
+      
+                                                                                                  
+   
+                                           
+   
+       
+
+	                                                             
+	                                                
+	 
+		                                                                                             
+	 
+ 
+#endif
+
+#if SERVER
+                                                        
+ 
+                  
+		                                                    
+			            
+       
+
+                               
+		                                                             
+			            
+       
+
+	                                   
+		           
+
+	                                                                                   
+ 
+#endif
+
+#if SERVER
+                                                         
+ 
+	                                                                                        
+		                                          
+
+	                 
+	  	                                                                                        
+	  	  	                                          
+	        
+
+	                           
+ 
+#endif
+
+#if SERVER
+                                                                 
+ 
+	                                                 
+	
+	                  
+		            
+		
+	                                
+	
+	                                                              
+	
+	                                                                                     
+	                                              
+	 
+		                                                                
+		 
+			                     
+				                          
+		 
+	 
+	
+	                          
+ 
+#endif
+
+#if SERVER
+                                                                     
+ 
+	                                       
+		        
+
+	                                            
+	 
+		                           
+		        
+	 
+
+	                                    
+		        
+		
+	                                                     
+	                      
+		        
+
+	                                                    
+ 
+#endif
+
+#if SERVER
+                                                                                     
+ 
+	                                                 
+	                                    
+ 
+#endif
+
+#if SERVER
+                                                                                       
+ 
+	                                                           
+	                                              
+ 
+#endif
+
+#if SERVER
+                                                                                                       
+ 
+	                                                               
+	                                                  
+ 
+#endif
+
+#if SERVER
+                                                                     
+ 
+	                                                                                     
+		        
+
+	                                                              
+
+	                                                                       
+
+	                                                   
+	 
+		                                               
+	 
+
+	                                                   
+	                                                     
+
+	                                                            
+
+	                          
+	                           
+		                                                                   
+
+	                                                                   
+	                                                               
+	                                                        
+
+	                                                             
+	 
+		                                                          
+		                                                      
+		                                                                       
+			                                                                                
+
+		                        
+			                                                                            
+
+		                                           
+		                                   
+		 
+			                                                                             
+				                                                                               
+		 
+
+		                                                             
+
+		                                   
+		                                               
+		 
+			                          
+			                                                                                                                              
+		 
+
+		                                         
+		 
+			                          
+			                                                                                                                              
+		 
+
+
+	 
+
+  
+	                                               
+	                                       
+	                                                         
+	                                       
+  
+
+	                                                   
+
+	                                                                                    
+
+	                                               
+
+	                                                                    
+	                             
+	 
+		                                                         
+		 
+			                                              
+			                                                                                                                              
+		 
+	 
+
+	                   
+ 
+#endif
+
+#if CLIENT
+void function HealthRegen_OnPlayerDisconnected( entity player )
+{
+	if ( !IsValid( player ) )
+		return
+
+	player.Signal( "HealthRegen_OnDisconnect" )
+}
+#endif
+
+#if CLIENT
+void function HealthRegen_CreateRUI()
+{
+	if ( file.healthRegenRui != null )
+		return
+
+	file.healthRegenRui = CreateCockpitPostFXRui( $"ui/armor_shieldregen.rpak" , MINIMAP_Z_BASE )
+	RuiSetFloat( file.healthRegenRui, "maxRegenDelay", file.healthRegenDelayTime )
+}
+#endif
+
+#if CLIENT
+void function HealthRegen_OnGameState_Ending()
+{
+	if ( file.healthRegenRui != null )
+		return
+
+	RuiDestroyIfAlive( file.healthRegenRui )
+	file.healthRegenRui = null
+}
+#endif
+
+#if CLIENT
+void function HealthRegen_ServerCallback_RegenCancelEvent()
+{
+	entity player = GetLocalClientPlayer()
+	if ( !IsValid( player ) )
+		return
+
+	player.Signal( "HealthRegen_OnDamaged" )
+}
+#endif
+
+#if CLIENT
+void function HealthRegen_OnPlayerSpawned( entity player )
+{
+	if ( player == GetLocalClientPlayer() )
+		HealthRegen_CreateRUI()
+}
+#endif
+
+#if CLIENT
+void function HealthRegen_RegenTriggerNotice_Thread( bool skipDelay )
+{
+	entity player = GetLocalClientPlayer()
+	if ( !IsValid( player ) )
+		return
+
+	player.Signal("HealthRegen_OnDamaged")
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "HealthRegen_OnDamaged" )
+	player.EndSignal( "HealthRegen_OnDisconnect" )
+
+	OnThreadEnd( function() : ( ) {
+		RuiSetBool( file.healthRegenRui, "isDamaged", false )
+		RuiSetFloat( file.healthRegenRui, "regenDelay", 0.0 )
+	} )
+
+	float regenDelay = 0.0
+	if ( !skipDelay )
+		regenDelay = file.healthRegenDelayTime
+
+	          
+
+	RuiSetImage(file.healthRegenRui, "typeIcon", $"rui/hud/unitframes/healthRegen_icon")
+	RuiSetBool( file.healthRegenRui, "isHealthRegen", true )
+	RuiSetBool( file.healthRegenRui, "isDamaged", true )
+	RuiSetGameTime( file.healthRegenRui, "lastDamageTime", Time() )
+	RuiSetFloat( file.healthRegenRui, "regenDelay", regenDelay )
+
+	RuiSetFloat3( file.healthRegenRui, "armorColor", SrgbToLinear( <166, 72, 71> / 255.0 ))
+
+	if ( !skipDelay )
+		wait( regenDelay - 0.25 )                                                    
+
+	while ( player.GetHealth() != player.GetMaxHealth())
+	{
+		WaitFrame()
+	}
+
+	RuiSetBool( file.healthRegenRui, "isDamaged", false )
+}
+#endif
+
+bool function GetIsModeHealthRegenActive()
+{
+	return GetCurrentPlaylistVarBool( "mode_health_regen_active", false )
+}
