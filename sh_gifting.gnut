@@ -1,0 +1,354 @@
+
+#if UI
+global function IsTwoFactorAuthenticationEnabled
+global function IsPlayerLeveledForGifting
+global function IsPlayerWithinGiftingLimit
+global function CanLocalPlayerGift
+global function RefreshTwoFactorAuthenticationStatus
+global function RefreshTwoFactorAuthenticationAndIsEnabled
+global function Gifting_GetRemainingDailyGifts
+global function GetGiftOfferEligibility
+global function IsGiftingEnabled
+global function HasFriendshipTenureBeenLongEnough
+global function GetGiftingMaxLimitPerResetPeriod
+global function ProcessGiftingInboxMessage
+global function GetGiftingInboxMessages
+global function Gifting_LevelInit
+global function MarkNewGiftedItemsAsNew
+global function GetFriendNameFromNucleusPId
+global function RemoveGiftCacheMessage
+#if DEV
+global function DEV_PrintGiftingInboxMessages
+#endif           
+#endif
+
+#if SERVER
+                                                   
+#endif
+
+#if UI
+struct{
+	array<GRXScriptInboxMessage> inboxMessages
+} file
+#endif
+
+#if UI
+bool function IsTwoFactorAuthenticationEnabled()
+{
+	bool isTfaEnabled = EADP_IsTfaEnabled()
+	
+	if ( GetConVarBool( "mtx_giftingForce2FA" ) )
+		isTfaEnabled = true
+
+	return isTfaEnabled
+}
+#endif          
+
+#if UI
+bool function IsPlayerLeveledForGifting()
+{
+	entity localPlayer = GetLocalClientPlayer()
+	if ( !IsValid( localPlayer ) )
+		return false
+
+	int currentXP = GetPlayerAccountXPProgress( ToEHI( localPlayer ) )
+
+	int currentLevel = GetAccountLevelForXP( currentXP )
+
+	                                                     
+	if ( currentLevel < ( GetConVarInt( "mtx_giftingMinAccountLevel" ) - 1 ) )
+		return false
+
+	return true
+}
+#endif          
+
+#if UI
+bool function IsPlayerWithinGiftingLimit()
+{
+	int limitCounter = GRX_GetGiftingLimitCounter()
+	if  ( limitCounter <  GetGiftingMaxLimitPerResetPeriod() )
+		return true
+
+	return false
+}
+#endif          
+
+#if UI
+void function RefreshTwoFactorAuthenticationStatus()
+{
+	RefreshEaTwoFactorAuthenticationStatus()
+}
+#endif          
+
+#if UI
+bool function CanLocalPlayerGift()
+{
+	bool hasTfa = IsTwoFactorAuthenticationEnabled()
+	bool hasLevel = IsPlayerLeveledForGifting()
+	bool withinLimits = IsPlayerWithinGiftingLimit()
+
+	return hasTfa && hasLevel && withinLimits
+}
+#endif          
+
+#if UI
+bool function RefreshTwoFactorAuthenticationAndIsEnabled()
+{
+	RefreshEaTwoFactorAuthenticationStatus()
+
+	bool isTfaEnabled = EADP_IsTfaEnabled()
+	return isTfaEnabled
+}
+#endif          
+
+#if UI
+int function Gifting_GetRemainingDailyGifts()
+{
+	return GetGiftingMaxLimitPerResetPeriod() - GRX_GetGiftingLimitCounter()
+}
+#endif          
+
+#if UI
+void function GetGiftOfferEligibility( string offerAlias, int hardwareId, string nucleus_pid )
+{
+	if ( !IsGiftingEnabled() )
+		return
+
+	GRX_GetOffer( offerAlias, hardwareId, nucleus_pid )
+}
+#endif          
+
+#if UI
+bool function IsGiftingEnabled()
+{
+	return GetConVarBool( "mtx_giftingEnabled" )
+}
+#endif          
+
+#if UI
+bool function HasFriendshipTenureBeenLongEnough( int friendshipCreationTime )
+{
+	if ( !IsConnected() )
+		return false
+
+	int currentTime = GetUnixTimestamp()
+	int friendshipLengthInSeconds = currentTime - friendshipCreationTime
+
+	                                         
+	int friendshipLengthInDays = friendshipLengthInSeconds / (  60 * 60 * 24 )
+	int minFriendshipInDays = GetConVarInt( "mtx_giftingMinFriendshipInDays" )
+
+	return friendshipLengthInDays >= minFriendshipInDays
+}
+#endif          
+
+#if UI
+int function GetGiftingMaxLimitPerResetPeriod()
+{
+	return GetConVarInt( "mtx_giftingLimit" )
+}
+#endif          
+
+#if UI
+void function ProcessGiftingInboxMessage( int batchCounter, int totalNumBatches, GRXScriptInboxMessage inboxMessage )
+{
+	if ( batchCounter == 1 )
+	{
+		file.inboxMessages.clear()
+
+		                                           
+		if ( inboxMessage.itemIndex.len() == 0 )
+			return
+	}
+
+	file.inboxMessages.append( inboxMessage )
+
+	if ( batchCounter == totalNumBatches )
+	{
+		EadpPeopleList eadFriendlist = EADP_GetFriendsListWithOffline()
+
+		file.inboxMessages.sort( SortInboxMessagesByOldest )
+		for ( int i = 0; i < file.inboxMessages.len(); i++ )
+		{
+			file.inboxMessages[i].gifterName = GetFriendNameFromNucleusPId( file.inboxMessages[i].senderNucleusPid, eadFriendlist.people )
+		}
+	}
+}
+
+int function SortInboxMessagesByOldest( GRXScriptInboxMessage a, GRXScriptInboxMessage b )
+{
+	if ( a.timestamp < b.timestamp )
+		return 1
+
+	if ( a.timestamp > b.timestamp )
+		return -1
+
+	return 0
+}
+#endif          
+
+#if UI
+void function RemoveGiftCacheMessage( int timestamp, string nID )
+{
+	for ( int i = 0; i < file.inboxMessages.len(); i++ )
+	{
+		GRXScriptInboxMessage message = file.inboxMessages[i]
+
+		if ( message.senderNucleusPid == nID && message.timestamp == timestamp )
+		{
+			file.inboxMessages.remove( i )
+			return
+		}
+	}
+}
+#endif
+
+
+#if UI
+array<GRXScriptInboxMessage> function GetGiftingInboxMessages()
+{
+	                                             
+	foreach ( GRXScriptInboxMessage message in file.inboxMessages )
+	for ( int i = 0; i < message.itemIndex.len(); i++ )
+	{
+		ItemFlavor flav = GetItemFlavorByGRXIndex( message.itemIndex[i] )
+		if ( ItemFlavor_IsBattlepass( flav ) )
+			message.itemIndex.remove( i )
+	}
+	return file.inboxMessages
+}
+#endif
+
+#if UI
+void function Gifting_LevelInit()
+{
+	MarkNewGiftedItemsAsNew()
+}
+#endif          
+
+#if UI
+void function MarkNewGiftedItemsAsNew()
+{
+	if ( !IsLobby() )
+		return
+
+	foreach ( GRXScriptInboxMessage inboxMessage in file.inboxMessages )
+	{
+		if ( inboxMessage.isNew )
+		{
+			foreach ( int itemIndex in inboxMessage.itemIndex )
+			{
+				ItemFlavor itemFlav = GetItemFlavorByGRXIndex( itemIndex )
+				Newness_TEMP_MarkItemAsNewAndInformServer( itemFlav )
+			}
+		}
+	}
+}
+#endif          
+
+#if DEV && UI
+void function DEV_PrintGiftingInboxMessages()
+{
+	printt("Printing gifting inbox messages ---------------")
+	for ( int idx = 0; idx < file.inboxMessages.len(); ++idx )
+	{
+		printt( "Gift #" + ( idx + 1 ) )
+		printt( "\tisNew = " + file.inboxMessages[idx].isNew )
+		printt( "\ttimestamp = " + file.inboxMessages[idx].timestamp )
+		printt( "\tsenderNucleusPid = " + file.inboxMessages[idx].senderNucleusPid )
+
+		if ( file.inboxMessages[idx].itemIndex.len() == file.inboxMessages[idx].itemCount.len() )
+		{
+			for ( int itemIdx = 0; itemIdx < file.inboxMessages[idx].itemIndex.len(); ++itemIdx )
+			{
+				printt( "\t\titemIndex = " + file.inboxMessages[idx].itemIndex[itemIdx] + ", itemCount = " + file.inboxMessages[idx].itemCount[itemIdx] )
+			}
+		}
+	}
+	printt("End of gifts ---------------")
+}
+#endif                 
+#if UI
+string function GetFriendNameFromNucleusPId( string id, array<EadpPeopleData> friends )
+{
+	string name = Localize( "#UNKNOWN_USER" )
+	EadpPeopleData friend
+	int platform = -1
+	foreach ( EadpPeopleData person in friends )
+	{
+		array< string > ids = [person.ea_pid, person.xbox_pid, person.psn_pid, person.switch_pid, person.steam_pid]
+		for ( int i = 0; i < ids.len(); i++ )
+		{
+			if ( id == ids[i] )
+			{
+				friend = person
+				switch ( i )
+				{
+					case 0:
+						platform = HARDWARE_PC
+						break
+					case 1:
+						platform = HARDWARE_XBOXONE
+						break
+					case 2:
+						platform = HARDWARE_PS4
+						break
+					case 3:
+						platform = HARDWARE_SWITCH
+						break
+					case 4:
+						platform = HARDWARE_PC_STEAM
+						break
+				}
+			}
+		}
+		if ( platform != -1 )
+			break
+	}
+
+	foreach ( EadpPresenceData presence in friend.presences )
+	{
+		bool isPSN = platform == HARDWARE_PS4
+		bool isXboxLive = platform == HARDWARE_XBOXONE
+		if ( isPSN )
+		{
+			if ( presence.hardware == HARDWARE_PS4 || presence.hardware == HARDWARE_PS5 )
+			{
+				name = presence.name
+				return name
+			}
+		}
+		else if ( isXboxLive )
+		{
+			if ( presence.hardware == HARDWARE_XBOXONE || presence.hardware == HARDWARE_XB5 )
+			{
+				name = presence.name
+				return name
+			}
+		}
+
+		if ( presence.hardware == platform )
+		{
+			name = presence.name
+			return name
+		}
+	}
+
+	return name
+}
+#endif          
+
+#if SERVER
+                                                                                                                                                               
+ 
+	                                                                                          
+ 
+#endif              
+
+
+
+
+
+
+

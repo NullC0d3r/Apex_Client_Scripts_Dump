@@ -1,0 +1,111 @@
+untyped
+
+global function UIVars_Init
+
+global function GetUIVar
+#if SERVER
+	                        
+#endif
+
+global function UICallback_SetUIVar
+global function RegisterUIVarChangeCallback
+
+table _uiVars = {}
+table<string, void functionref(string, var)> _uiVarsSetters = {}
+table _uiVarChangeCallbacks = {}
+
+#if SERVER
+                                                      
+ 
+	                                                          
+ 
+
+                                                      
+ 
+	                                                         
+ 
+#endif
+
+void function UIVars_Init()
+{
+	                                               
+	                                                                                                
+	                                                                                              
+	                                                                 
+
+	RegisterUIVarTime( "uiGameStartTime", -1.0 )
+	RegisterUIVarBool( "uiDisableDev", true )
+}
+
+void function RegisterUIVarTime(string varName, float value)
+{
+	RegisterUIVar(varName, value)
+
+#if SERVER
+	                                            
+#endif
+}
+
+void function RegisterUIVarBool(string varName, bool value)
+{
+	RegisterUIVar(varName, value)
+
+#if SERVER
+	                                            
+#endif
+}
+
+void function RegisterUIVar( string varName, value )
+{
+	_uiVars[varName] <- value
+}
+
+                           
+function GetUIVar( obj, string varName )
+{
+	Assert( varName in _uiVars )
+
+	return _uiVars[varName]
+}
+
+#if SERVER
+                           
+                                                                      
+ 
+	                            
+	                                   
+	                                  
+
+	                        
+	                                       
+
+	                                    
+	                                       
+ 
+#endif          
+
+                        
+function UICallback_SetUIVar( string varName, value )
+{
+	_uiVars[varName] = value
+
+	UIVarChangedCallbacks(varName)
+}
+
+void function RegisterUIVarChangeCallback( string varName, callbackFunc )
+{
+	if ( !(varName in _uiVarChangeCallbacks) )
+		_uiVarChangeCallbacks[varName] <- []
+
+	_uiVarChangeCallbacks[varName].append( callbackFunc.bindenv( this ) )
+}
+
+void function UIVarChangedCallbacks( string varName )
+{
+	                                    
+	if ( !( varName in _uiVarChangeCallbacks ) )
+		return
+
+	foreach ( callbackFunc in _uiVarChangeCallbacks[varName] )
+		callbackFunc()
+}

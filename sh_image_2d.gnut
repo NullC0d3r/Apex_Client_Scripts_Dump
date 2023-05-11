@@ -1,0 +1,46 @@
+global function ShImage2D_LevelInit
+global function GetImage2DAssetFromItemFlav
+
+                         
+                         
+                        
+                         
+                         
+
+#if SERVER || CLIENT || UI
+void function ShImage2D_LevelInit()
+{
+	AddCallback_RegisterRootItemFlavors( OnRegisterRootItemFlavors )
+}
+#endif
+
+#if SERVER || CLIENT || UI
+void function OnRegisterRootItemFlavors()
+{
+	foreach ( asset image2DAsset in GetBaseItemFlavorsFromArray( "images2D" ) )
+	{
+		if ( image2DAsset == $"" )
+		{
+			continue
+		}
+		ItemFlavor ornull image2DOrNull = RegisterItemFlavorFromSettingsAsset( image2DAsset )
+		if ( image2DOrNull == null )
+		{
+			printt( "Failed to register ItemFlavor from Settings Asset ", image2DAsset )
+		}
+	}
+}
+#endif
+
+                          
+                          
+                          
+                          
+                          
+
+asset function GetImage2DAssetFromItemFlav( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.image_2d )
+
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "image2D" )
+}

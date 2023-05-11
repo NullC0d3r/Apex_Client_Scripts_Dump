@@ -1,0 +1,2909 @@
+global function Sh_Mastery_Init
+
+#if SERVER
+                                                     
+                                          
+                                         
+                                                    
+                                             
+                                                
+                                     
+       
+                                               
+      
+#endif
+
+#if SERVER || CLIENT
+                  
+                                              
+      
+#endif
+
+#if CLIENT
+                  
+                                                  
+                                                             
+                                                    
+      
+#endif
+
+#if CLIENT && DEV
+global function DEV_RefreshMasteryDevMenuInternal
+global function DEV_ToggleWeaponMasteryDebugWindow
+global function DEV_SetWeaponDebugWindowStyle
+#endif
+
+#if ( CLIENT || UI ) && DEV
+global function DEV_MasteryUIInterfaceTest
+global function DEV_TestGetSpecialInfo
+#endif
+
+#if SERVER && DEV
+                                         
+                               
+                                  
+                                               
+                                             
+                                                
+                                  
+#endif
+
+#if CLIENT || UI
+global function Mastery_GetWeaponBaseData
+global function Mastery_GetWeaponTrialList
+global function Mastery_GetWeaponTrialListClonedTrialData
+global function Mastery_GetWeaponFinalReward
+global function Mastery_GetAllWeaponReward
+global function Mastery_GetPreviousMatchXPUpdates
+global function Mastery_GetPreviousMatchTrialUpdates
+global function Mastery_GetWeaponXP
+global function Mastery_GetWeaponLevel
+global function Mastery_GetTotalXPToCompleteWeaponLevel
+global function Mastery_CalculateLevelFromXP
+global function Mastery_SortTrialQueryResult
+global function Mastery_IsLocalPlayerInfoReady
+#endif
+
+#if UI
+global function ClientToUI_InitLocalPlayerInfo
+global function Mastery_GetMatchRewards
+global function Mastery_DisplayMatchRewards
+global function Mastery_WeaponTrialsBecameUnlockedOrCompleted
+global function Mastery_GetWeaponTrialStatusChanges
+#endif
+
+#if UI && DEV
+global function DEV_PrintStatusChangeForAllTrials
+#endif
+
+global function Mastery_GetStatValue
+global function Mastery_IsValidStatRef
+global function Mastery_DoesStatSatisfyValue
+global function Mastery_IsEnabled
+
+          
+const bool MASTERY_OPEN_GRX = true
+
+const int TRIAL_COUNT = 5
+const int XP_MODIFIER_COUNT = 13
+const int LEVELS_UNLOCK_EACH_TRIAL = 20
+
+const string PERSISTENCE_XP_SUFFIX = "xp"
+const string PERSISTENCE_SOPM_XP_SUFFIX = "sopm_xp"
+const string PERSISTENCE_LEVEL_SUFFIX = "level"
+const string PERSISTENCE_STAT_SUFFIX = "stat"
+const string PERSISTENCE_SOPM_STAT_SUFFIX = "sopm_stat"
+const string PERSISTENCE_REWARDSEQ_SUFFIX = "rewardseq"
+const string PERSISTENCE_XP_MODIFIER_LIST = "xp_modifier_list"
+const string PERSISTENCE_TRIAL_LIST = "trial_list"
+
+                           
+const string ACTION_PLACEMENT_BONUS = "Placement_Bonus"
+
+const string XP_SPECIAL_MODIFIER_RANK = "placement_held"
+const string XP_SPECIAL_MODIFIER_KILL_BASE = "kill_base"
+const string XP_SPECIAL_MODIFIER_KILL_ADD = "kill_add"
+enum eSpecialModifierType
+{
+	None,
+	Rank,
+	Kill_Base,
+	Kill_Add
+}
+const table<string, int> SPECIAL_MODIFIER_MAP =
+{
+	[XP_SPECIAL_MODIFIER_RANK] = eSpecialModifierType.Rank,
+	[XP_SPECIAL_MODIFIER_KILL_BASE] = eSpecialModifierType.Kill_Base,
+	[XP_SPECIAL_MODIFIER_KILL_ADD] = eSpecialModifierType.Kill_Add
+}
+
+enum eMasteryStatType
+{
+	Trial,
+	XPModifier
+}
+
+             
+const array<int> TRIAL_TIERS_FOR_BADGE = [0, 2]
+const int BADGE_TIER_BITMASK = 7
+const int BADGE_LEVEL_OFFSET = 3
+          
+
+               
+enum eFinalRewardType
+{
+	None,
+	Five,
+
+	COUNT
+}
+const int FINAL_REWARD_FIVE_INDEX = 4
+const int FINAL_REWARD_START_BIT = 21
+
+const string ALL_WEAPON_REWARD_SEQUENCE_NAME = "mastery_rewardseq_all_weapon"
+const int ALL_WEAPON_REWARD_BIT = 0
+
+#if SERVER
+                      
+ 
+	                 
+	                    
+ 
+#endif
+          
+
+          
+global struct StatInstance
+{
+	int    targetTag
+	string persistenceKey
+	int    cacheIndex
+	int    statType
+	int    trialIndex = -1                                                                      
+	int    xpIndex = -1
+	                   
+	#if DEV
+		string description
+		bool   hideDebugInfo = false
+	#endif
+}
+
+global struct MasteryReward
+{
+	ItemFlavor& flav
+	int         quantity
+	int			level
+	bool 		isOwned = false                                                             
+	bool 		isTall = false                                                             
+}
+
+global struct TrialConfig
+{
+	int tierLevel
+	int displayLevel
+	int goal
+	StatInstance& statInstance
+
+	#if DEV
+		string statParam
+	#endif
+	array<MasteryReward> rewards
+	ItemFlavor ornull specialBadge
+
+	#if CLIENT || UI
+		string description
+		string name
+	#endif
+}
+
+global struct XPModifierConfig
+{
+	int   index
+	float weight
+	float nonBRWeight
+	int   specialModifier = eSpecialModifierType.None
+	StatInstance& statInstance
+
+	#if DEV
+		string statParam
+	#endif
+	string action
+	string modifierType
+	#if CLIENT || UI
+		string actionText
+	#endif
+}
+
+struct MasteryWeaponConfig
+{
+	array<XPModifierConfig>   xpModifierList
+	array<TrialConfig>        trialList
+	table<int, TrialConfig>   tierTrialMap
+	array<MasteryReward>      finalRewardFive
+	array<int>                badgeTiers
+
+	string persistenceKey_XP
+	string persistenceKey_SopmXP
+	string persistenceKey_Level
+}
+
+global struct MasteryTrialData
+{
+	int  currentValue
+	bool isUnlocked
+	bool isCompleted
+	#if CLIENT && DEV
+		int statInternalValue
+		bool isStatUnlocked
+	#endif
+}
+
+struct MasteryWeaponData
+{
+	int startLevel
+	int startXP
+#if CLIENT || UI
+	array<MasteryTrialData> trialList
+#endif
+}
+
+struct StatData
+{
+  	                
+	bool isLocked = false
+}
+
+struct MasteryPlayerInfo
+{
+	table<ItemFlavor, MasteryWeaponData> 	weaponDataCache
+#if SERVER
+	                				                              
+#endif
+}
+
+struct RankWeightConfig
+{
+	int placement
+	int weight
+}
+
+struct FileStruct_LifetimeLevel
+{
+	                
+	table<ItemFlavor, MasteryWeaponConfig> 	weaponConfigMap
+
+	table<int, array<StatInstance> > 		targetStatsMap
+	array<StatInstance> 					allStatsList
+
+	array<MasteryReward>					allWeaponRewards
+
+	                           
+	table<entity, MasteryPlayerInfo> 		playerInfoCache
+	#if CLIENT || UI
+		MasteryPlayerInfo					localPlayerInfo
+		bool 								isLocalPlayerInfoReady = false
+	#endif
+
+	                        
+	array<int>        totalXPToCompleteLevel
+	int               xpForBonusLevels
+	int               weaponMaxLevel
+	int               weaponMaxXP
+
+	                                  
+	array<RankWeightConfig> xpRankModifierConfig
+	int totalHeldTime
+
+	                                  
+	float baseKillWeight
+	float baseNonBRKillWeight
+
+	                             
+	bool                      isStatTurnOff
+	array<void functionref()> statTurnOffCallbacks
+
+	                   
+	array<string> validStatList
+
+	                 
+	bool isMasteryEnabled
+}
+FileStruct_LifetimeLevel& fileLevel
+
+                            
+global struct MasteryWeapon_BaseQueryResult
+{
+	ItemFlavor& weapon
+	int         level
+	int         xp
+}
+
+global struct MasteryWeapon_FinalRewardResult
+{
+	int                  curVal
+	int                  goalVal
+	bool                 isCompleted
+	array<MasteryReward> rewards
+}
+
+global struct MasteryWeapon_TrialQueryResult
+{
+	TrialConfig&         trialConfig
+	MasteryTrialData&    trialData
+	array<MasteryReward> rewards
+}
+
+global struct MasteryWeapon_XPComponent
+{
+	XPModifierConfig& xpModifierConfig
+	int               xpValue
+}
+
+global struct MasteryWeapon_ActionXP
+{
+	int                              xpValue
+	string                           actionText
+	array<MasteryWeapon_XPComponent> xpComponentList
+}
+
+global struct MasteryWeapon_MatchXPPerWeapon
+{
+	int                                    lastXP
+	int                                    currentXP
+	array<TrialConfig>                     unlockTrialList
+	table<string, MasteryWeapon_ActionXP>  actionXPMap
+}
+
+global struct MasteryWeapon_ChangedTrial
+{
+	TrialConfig& trialConfig
+	int          lastValue
+	int          currentValue
+
+	float        lastFrac
+	float        currentFrac
+
+	bool         isComplete
+}
+
+global struct MasteryWeapon_MatchTrialPerWeapon
+{
+	array<MasteryWeapon_ChangedTrial> changedTrialList
+}
+
+#if UI
+global enum eWeaponTrialStatusChangeType
+{
+	NONE,
+	UNLOCKED,
+	COMPLETED
+}
+
+global struct MasteryWeapon_TrialStatusChange
+{
+	int statusChange
+	MasteryWeapon_TrialQueryResult& state1
+	MasteryWeapon_TrialQueryResult& state2
+}
+
+global struct MasteryWeapon_TrialStatusChangesPerWeapon
+{
+	ItemFlavor&                            weapon
+	array<MasteryWeapon_TrialStatusChange> trialStatusChangeList
+}
+#endif      
+
+         
+#if SERVER || CLIENT
+                  
+                                              
+ 
+                                                                      
+                                                                                  
+                                                                                                                                               
+                                                    
+                                                              
+ 
+      
+#endif
+
+#if CLIENT && DEV
+var DEV_screenInfoRui = null
+bool DEV_menuStyle_hideStatDetail = false
+
+array<string> DEV_updateInfoList
+const int DEV_UPDATEINFO_SIZE = 10
+const float DEV_UPDATETIME_THRESHOLD = 2
+int DEV_updateInfoPtr
+float DEV_latestInfoTime
+int DEV_latestInfoPtr
+#endif
+
+#if CLIENT
+                  
+                                                                                                       
+ 
+        
+                         
+         
+                                                      
+                                                                                                   
+                                     
+       
+ 
+      
+#endif
+
+#if CLIENT
+                  
+                                                                       
+ 
+        
+                                                     
+                         
+   
+                                      
+                                                        
+    
+                                           
+                         
+    
+       
+    
+                                                      
+                                                                     
+    
+                                                                
+    
+                               
+                                                                                                       
+    
+   
+                                     
+       
+ 
+      
+#endif
+
+#if CLIENT && DEV
+void function OnPlayerWeaponSwitched( entity player, entity newWeapon, entity oldWeapon )
+{
+	if ( player == GetLocalClientPlayer() )
+		DEV_RefreshMasteryDevMenuInternal()
+}
+#endif
+
+#if CLIENT && DEV
+void function DEV_RefreshMasteryDevMenuInternal( string weaponGuid = "" )
+{
+	if ( DEV_screenInfoRui == null )
+		return
+	entity player = GetLocalClientPlayer()
+	ItemFlavor ornull weaponFlavorOrNull
+	if ( weaponGuid == "" )
+	{
+		entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		if ( !IsValid( weapon ) )
+		{
+			weaponFlavorOrNull = null
+		}
+		else
+		{
+			string weaponClassNameOrNull = weapon.GetWeaponClassName()
+			weaponFlavorOrNull = GetWeaponItemFlavorByClass( weaponClassNameOrNull )
+		}
+	}
+	else
+	{
+		weaponFlavorOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( weaponGuid ) )
+	}
+	DEV_SetSingleWeaponRui( DEV_screenInfoRui, player, weaponFlavorOrNull, 0 )
+	if ( !IsLobby() )
+		DEV_SetStatUpdateInfo()
+}
+#endif
+
+#if CLIENT && DEV
+void function DEV_ToggleWeaponMasteryDebugWindow()
+{
+	if ( !fileLevel.isMasteryEnabled )
+		return
+	entity player = GetLocalClientPlayer()
+	if ( DEV_screenInfoRui != null )
+	{
+		player.Signal( "CloseDebugMenu" )
+		RuiDestroyIfAlive( DEV_screenInfoRui )
+		DEV_screenInfoRui = null
+
+		return
+	}
+	DEV_screenInfoRui = RuiCreate( $"ui/mastery_debug.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+	DEV_RefreshMasteryDevMenuInternal()
+}
+
+void function DEV_SetWeaponDebugWindowStyle( bool hideStatDetail )
+{
+	DEV_menuStyle_hideStatDetail = hideStatDetail
+}
+#endif
+
+#if CLIENT && DEV
+void function DEV_SetSingleWeaponRui( var rui, entity player, ItemFlavor ornull weaponFlavorOrNull, int index )
+{
+	string postfix = "_" + index
+	                           
+	   
+	  	                                                                  
+	  	                                                                
+	  	      
+	   
+	                                                            
+	                                                                                            
+	if ( weaponFlavorOrNull == null )
+	{
+		RuiSetString( DEV_screenInfoRui, "weaponName" + postfix, "empty" )
+		RuiSetString( DEV_screenInfoRui, "weaponContent" + postfix, "" )
+		return
+	}
+	ItemFlavor weaponFlavor = expect ItemFlavor( weaponFlavorOrNull )
+	string title = DEV_GetWeaponName( weaponFlavor ).toupper()
+	title += format( "[%s][%s]", ItemFlavor_GetGUIDString( weaponFlavor ), WeaponItemFlavor_GetClassname( weaponFlavor ) )
+
+	if ( !(weaponFlavor in fileLevel.weaponConfigMap) )
+	{
+		RuiSetString( DEV_screenInfoRui, "weaponName" + postfix, title )
+		RuiSetString( DEV_screenInfoRui, "weaponContent" + postfix, "[ERROR] No config for this weapon" )
+		return
+	}
+	if ( IsLobby() )
+		title += format( "\nXP:%d LEVEL:%d", fileLevel.localPlayerInfo.weaponDataCache[weaponFlavor].startXP, fileLevel.localPlayerInfo.weaponDataCache[weaponFlavor].startLevel )
+	else
+		title += format( "\nLEVEL:%d", fileLevel.localPlayerInfo.weaponDataCache[weaponFlavor].startLevel )
+	RuiSetString( DEV_screenInfoRui, "weaponName" + postfix, title )
+
+	MasteryWeaponConfig weaponConfig = fileLevel.weaponConfigMap[weaponFlavor]
+	string content	 = "----------TRIAL CHALLENGE----------\n"
+	foreach ( trialIndex, trialConfig in weaponConfig.trialList )
+	{
+		string statKey = BuildPDefKey_TrialStat( weaponFlavor, trialConfig.tierLevel )
+		content += format( "LEVEL %d    [%d/%d]    cfg:'%s' isUnlocked:%s \n",                                                                                      
+																					trialConfig.displayLevel,
+																					player.GetPersistentVarAsInt( statKey ),
+																					trialConfig.goal,
+																					                                                                                                  
+																					DEV_menuStyle_hideStatDetail? "" : trialConfig.statParam,
+																					fileLevel.localPlayerInfo.weaponDataCache[weaponFlavor].trialList[trialIndex].isStatUnlocked? "true" : "false" )
+	}
+	if ( !IsLobby() )                                      
+	{
+		content += "------------XP MODIFIER------------\n"
+		foreach ( xpModifierConfig in weaponConfig.xpModifierList )
+		{
+			string statKey = BuildPDefKey_XPModifierStat( weaponFlavor, xpModifierConfig.index )
+			content += format( "INDEX %d    [%d]    cfg:'%s'\n", xpModifierConfig.index, player.GetPersistentVarAsInt( statKey ), DEV_menuStyle_hideStatDetail? "" : xpModifierConfig.statParam )
+		}
+	}
+
+	RuiSetString( DEV_screenInfoRui, "weaponContent" + postfix, content )
+}
+
+void function DEV_SetStatUpdateInfo()
+{
+	string content = "STAT UPDATE INFO\n"
+	int lastIndex = DEV_updateInfoList.len() + DEV_updateInfoPtr - 1
+	int latestIndex = DEV_updateInfoPtr > DEV_latestInfoPtr ? DEV_latestInfoPtr + DEV_updateInfoList.len() : DEV_latestInfoPtr
+	printf( "[Mastery] stat update info debug, lastIndex:%d, latestInfoPtr:%d, updateInfoPtr:%d, updateInfoList.len():%d", lastIndex, DEV_latestInfoPtr, DEV_updateInfoPtr, DEV_updateInfoList.len() )
+	for ( int i = 0; i < DEV_updateInfoList.len(); i++ )
+	{
+		int index = (DEV_updateInfoPtr + i) % DEV_updateInfoList.len()
+		if ( DEV_updateInfoPtr + i >= latestIndex && DEV_updateInfoPtr + i <= lastIndex )
+		{
+			content += "`1"
+		}
+		else
+		{
+			content += "`0"
+		}
+		content += DEV_updateInfoList[index] + "\n"
+	}
+	                       
+	RuiSetString( DEV_screenInfoRui, "statUpdateInfo", content )
+}
+#endif
+
+#if ( CLIENT || UI ) && DEV
+void function DEV_MasteryUIInterfaceTest()
+{
+	printf( "[Mastery] ----Trial query result----" )
+	foreach ( weapon in GetAllWeaponItemFlavors() )
+	{
+		array<MasteryWeapon_TrialQueryResult> ornull trialResultList = Mastery_GetWeaponTrialList( weapon )
+		printf( "[Mastery]   ==weapon[%s]", DEV_ItemFlavor_GetCleanedAssetPath( weapon ) )
+		foreach ( trialResult in expect array<MasteryWeapon_TrialQueryResult>( trialResultList ) )
+		{
+			printf( "[Mastery]     |--config tierLevel[%d] name[%s] desc[%s]", trialResult.trialConfig.tierLevel, Localize( trialResult.trialConfig.name ), Localize( trialResult.trialConfig.description ) )
+			printf( "[Mastery]         |--data value[%d] isUnlocked[%s]", trialResult.trialData.currentValue, trialResult.trialData.isUnlocked ? "true":"false" )
+		}
+	}
+	printf( "[Mastery] ----XP updates for last match----" )
+	table<ItemFlavor, MasteryWeapon_MatchXPPerWeapon> matchXPResult = Mastery_GetPreviousMatchXPUpdates()
+	foreach ( weapon, matchXP in matchXPResult )
+	{
+		printf( "[Mastery]     ==weapon[%s] xp[%d->%d] level[%d->%d]", DEV_ItemFlavor_GetCleanedAssetPath( weapon ), matchXP.lastXP, matchXP.currentXP, Mastery_CalculateLevelFromXP( matchXP.lastXP ), Mastery_CalculateLevelFromXP( matchXP.currentXP ) )
+		printf( "[Mastery]         |--Unlock trial list" )
+		foreach ( unlockTrial in matchXP.unlockTrialList )
+		{
+			printf( "[Mastery]             |--trial tierLevel[%d]", unlockTrial.tierLevel )
+		}
+		printf( "[Mastery]         |--XP components" )
+		foreach ( actionType, actionXP in matchXP.actionXPMap )
+		{
+			printf( "[Mastery]             |--xp action[%s] actionText[%s] value[%d]", actionType, Localize( actionXP.actionText ), actionXP.xpValue )
+		}
+	}
+	printf( "[Mastery] ----Trial updates for last match----" )
+	table<ItemFlavor, MasteryWeapon_MatchTrialPerWeapon>  matchTrialResult = Mastery_GetPreviousMatchTrialUpdates()
+	foreach ( weapon, matchTrial in matchTrialResult )
+	{
+		printf( "[Mastery]     ==weapon[%s]", DEV_ItemFlavor_GetCleanedAssetPath( weapon ) )
+		printf( "[Mastery]         |--Changed trial list" )
+		foreach ( changedTrial in matchTrial.changedTrialList )
+		{
+			printf( "[Mastery]             |--trial tierLevel[%d] [%d->%d] complete[%s]", changedTrial.trialConfig.tierLevel, changedTrial.lastValue, changedTrial.currentValue, changedTrial.isComplete ? "true" : "false" )
+			if ( changedTrial.isComplete )
+			{
+				foreach ( reward in changedTrial.trialConfig.rewards )
+				{
+					printf( "[Mastery]                 |--reward:[%s] quantity:[%d]", DEV_ItemFlavor_GetCleanedAssetPath( reward.flav ), reward.quantity )
+				}
+			}
+		}
+	}
+}
+#endif
+
+#if DEV
+string function DEV_GetWeaponName( ItemFlavor weapon )
+{
+	return DEV_ItemFlavor_GetCleanedAssetPath( weapon ).slice( 17 )
+}
+#endif
+
+#if SERVER && DEV
+                                                                             
+ 
+	                                   
+ 
+
+                                                        
+ 
+	                                                             
+	 
+		                                
+		                                                                                                                       
+		                                             
+		                                                                 
+		                                                     
+		                                                                          
+		                                                   
+		                                                                       
+		                                                        
+		 
+			                                                                            
+			                                                                                                             
+			                                                                                                       
+				                      
+				                                        
+				                                                                                                                                                                       
+				                                    
+				                      
+				                                             
+		 
+		                                                                  
+		 
+			                                                                              
+			                                                                                               
+				                       
+				                                        
+				                                                                                                                                                                            
+				                                         
+				                            
+		 
+	 
+ 
+
+                                                                                              
+ 
+	                                       
+	 
+		                                                                                                                                                   
+	 
+	                                                                            
+	                                                                        
+	                                                                                                   
+	                                                                    
+	                                                
+	              
+		                                                                    
+	                 
+	 
+		                                                                                                                                   
+		                                                                                                                                      
+		                                                           
+	 
+                   
+                                                                               
+                                                                                                                                                                                      
+       
+ 
+
+                                                                                                     
+ 
+	                                                                    
+	                                            
+	                                                                                                               
+ 
+
+                                                              
+ 
+	                                          
+ 
+
+                                                                       
+ 
+	                                                             
+	 
+		                                                        
+		 
+			                                                                        
+			                                         
+		 
+	 
+ 
+
+                                                                                                                   
+ 
+	                                                                                    
+	                      
+	 
+		                                                                             
+		 
+			                                                                        
+			                                             
+		 
+	 
+	    
+	 
+		                                                            
+		                                             
+	 
+ 
+#endif
+
+#if SERVER && DEV
+                                   
+ 
+	                                                                          
+	                                                   
+	                                                        
+	                       
+
+	                                                                      
+	                                                 
+	                                                      
+	                                                    
+	                                                        
+	                                                                                               
+	                                                                                       
+	                       
+
+	                                               
+	                                                                                              
+	                                                           
+	                           
+ 
+#endif
+
+void function Sh_Mastery_Init()
+{
+	FileStruct_LifetimeLevel newFileLevel
+	fileLevel = newFileLevel
+
+	#if SERVER
+		                 
+	#endif
+
+	if ( !Mastery_IsEnabled() )
+	{
+		fileLevel.isStatTurnOff = true
+		fileLevel.isMasteryEnabled = false
+		printt( "[MASTERY] Not initiate mastery system due to playlist var enable_mastery_weapon == 0" )
+		return
+	}
+
+	fileLevel.isStatTurnOff = false
+	fileLevel.isMasteryEnabled = true
+
+	LoadConfig()
+	BuildValidStatList()
+
+	#if SERVER
+		                                                               
+		                                                          
+		                    
+			                                                                    
+		      
+	#endif
+
+	#if CLIENT || UI
+		thread InitLocalPlayerInfo_Thread()
+	#endif
+
+	                          
+	#if SERVER && DEV
+		                                               
+		                                                                      
+	#endif
+
+	#if CLIENT && DEV
+		AddCallback_OnPlayerWeaponSwitched( OnPlayerWeaponSwitched )
+		RegisterSignal( "CloseDebugMenu" )
+	#endif
+	                        
+}
+
+#if SERVER
+                                                    
+ 
+	                                                                                            
+
+	          
+		                
+		 
+			      
+		 
+		                                                                                                       
+			      
+		                            
+		                                               
+
+		                                    
+		                                
+		                              
+	      
+ 
+#endif
+
+#if CLIENT || UI
+void function InitLocalPlayerInfo_Thread()
+{
+	while ( !IsFullyConnected() )
+		WaitFrame()
+	
+	InitPlayerInfo( GetLocalClientPlayer(), fileLevel.localPlayerInfo )
+}
+#endif
+
+#if CLIENT
+void function Client_InitLocalPlayerInfo()
+{
+	InitPlayerInfo( GetLocalClientPlayer(), fileLevel.localPlayerInfo )
+	RunUIScript( "ClientToUI_InitLocalPlayerInfo" )
+}
+#endif
+
+#if CLIENT
+                  
+                                                  
+ 
+                             
+ 
+      
+#endif
+
+#if UI
+void function ClientToUI_InitLocalPlayerInfo()
+{
+	InitPlayerInfo( GetLocalClientPlayer(), fileLevel.localPlayerInfo )
+}
+#endif
+
+void function InitPlayerInfo( entity player, MasteryPlayerInfo playerInfo )
+{
+	               
+	#if SERVER
+		                                
+		                                                               
+		 
+			                 
+			         
+			  	                                    
+			  	 
+			  		                         
+			  	 
+			  	    
+			        
+			  	 
+			  		                                                                                   
+			  	 
+			                                           
+		 
+	#endif
+
+	                 
+	foreach ( weapon, weaponConfig in fileLevel.weaponConfigMap )
+	{
+		if ( !(weapon in playerInfo.weaponDataCache) )
+		{
+			MasteryWeaponData weaponData
+			playerInfo.weaponDataCache[weapon] <- weaponData
+		}
+#if DEV
+		if ( DEV_ShouldIgnorePersistence() )
+		{
+			playerInfo.weaponDataCache[weapon].startXP = 1000
+			playerInfo.weaponDataCache[weapon].startLevel = Mastery_CalculateLevelFromXP( 1000 )
+		}
+		else
+#endif
+		{
+			                           
+			                                                                 
+			#if SERVER
+				                                                                       
+				                                                                             
+				
+				                          
+				                                                                                          
+				                                
+				 
+					                                                                                                                  
+					                                          
+				 
+				                                                                                         
+					                                                                                                            
+				                               
+				 
+					                                                                       
+					                                                                                                     
+					                        
+				 
+				                                                                                   
+					                                                                                                         
+				                         
+				 
+					                                                              
+					                  
+					                                                     
+				 
+				    
+				                                                                                            
+				                                               
+				                                                     
+
+				                                                                                                     
+				                                                                                                                
+
+				                                                 
+				 
+					                                                                                                                                                                                    
+
+					                                                                     
+					                                                                                                            
+					                                 
+					                                   
+					                                          
+					 
+						                                                            
+						                           
+					 
+					                                     
+					 
+						                                    
+						                           
+					 
+					                                        
+					 
+						                                       
+						                           
+					 
+					                           
+					 
+						                                                                                             
+					 
+					    
+					                                                  
+					                                                 
+					                                      
+					 
+						       
+							                                                    
+						      
+								                                                                                                                                                                                 
+						          
+						  	                                                                                      
+						  	                                                                                     
+						        
+					 
+					       
+						                                                   
+							                
+					      
+					                                                                                 
+				 
+			#endif
+
+			                                 
+			#if CLIENT || UI
+				int xp = -1
+				int level = -1
+				if ( IsLobby() )
+				{
+					xp = player.GetPersistentVarAsInt( weaponConfig.persistenceKey_XP )
+					level = player.GetPersistentVarAsInt( weaponConfig.persistenceKey_Level )
+				}
+				else
+				{
+					xp = player.GetPersistentVarAsInt( weaponConfig.persistenceKey_SopmXP )
+					level = Mastery_CalculateLevelFromXP( xp )
+				}
+				playerInfo.weaponDataCache[weapon].startXP = xp
+				playerInfo.weaponDataCache[weapon].startLevel = level
+
+				playerInfo.weaponDataCache[weapon].trialList.clear()
+				foreach ( trialConfig in weaponConfig.trialList )
+				{
+					MasteryTrialData trialData
+					trialData.currentValue = minint( trialConfig.goal, player.GetPersistentVarAsInt( BuildPDefKey_TrialStat( weapon, trialConfig.tierLevel ) ) )
+					trialData.isCompleted = trialData.currentValue == trialConfig.goal
+					trialData.isUnlocked = IsTrialUnlocked( level, trialConfig.tierLevel )
+					#if DEV
+						if ( GetConVarBool( "mastery_unlock_all_trials" ) )
+							trialData.isUnlocked = true
+					#endif
+					#if CLIENT && DEV
+						                                                                                     
+						trialData.isStatUnlocked = IsTrialUnlocked( level, trialConfig.tierLevel ) && !trialData.isCompleted
+						if ( GetConVarBool( "mastery_unlock_all_trials" ) )
+							trialData.isStatUnlocked = true
+					#endif
+					playerInfo.weaponDataCache[weapon].trialList.append( trialData )
+				}
+			#endif
+		}
+	}
+	#if CLIENT || UI
+		fileLevel.isLocalPlayerInfoReady = true
+	#endif
+	#if UI
+                                   
+			#if DEV
+				if ( !DEV_ShouldIgnorePersistence() )
+			#endif
+				thread RTKWeaponMasteryScreen_InitializeDataModelThread()
+        
+	#endif
+}
+
+#if CLIENT || UI
+bool function Mastery_IsLocalPlayerInfoReady()
+{
+	return fileLevel.isLocalPlayerInfoReady
+}
+#endif
+
+#if SERVER
+                                                     
+ 
+       
+	                                     
+      
+	 
+		                                                             
+		 
+			                                                     
+			 
+				                                                                    
+			 
+		 
+	 
+ 
+
+                                                   
+ 
+       
+	                                     
+      
+	 
+		                                                             
+		 
+			                              
+			                                                                              
+			                                                                        
+			                                          
+			                                                             
+			 
+				                                                                                                         
+				                                                                                                                                
+			 
+		 
+	 
+ 
+#endif
+
+#if SERVER
+                          
+ 
+	                                                 
+	                              
+	                                               
+	 
+		    
+	 
+	                                      
+	 
+		                                     
+			                                      
+		       
+			                      
+				                                                                                   
+		      
+		                                          
+			                                        
+	 
+ 
+
+                                                                    
+ 
+	                                  
+		      
+	                                                                   
+	                
+		      
+	                                          
+		                                                      
+	                                      
+ 
+
+                                                           
+ 
+       
+	                                     
+      
+	 
+		                                             
+			      
+		                     
+			      
+		                                                                 
+			      
+		                                  
+		                                                    
+		                                                             
+		 
+			             
+			                                             
+			                       
+			                                                     
+			 
+				                                                                                      
+				                                                                               
+				                
+				 
+					              
+					                                          
+					                            
+				 
+				                      
+				                                                              
+				 
+					                                                                                                           
+					                
+					 
+						              
+						                                                     
+						                                                    
+						                                              
+						                            
+					 
+				 
+				  
+			 
+			                                                                                                                          
+			                                                  
+			                                                                                 
+			                                                                              
+			                                                                                
+			 
+				                                                                                                                                                                          
+			 
+			                        
+			 
+				                                                             
+				                                                                            
+				 
+					                                                           
+				 
+			 
+			                
+			 
+				                                                                                                                                                                  
+				                                                                              
+			 
+		 
+	 
+ 
+#endif
+
+#if SERVER
+                                                                                          
+ 
+	                                                                                                      
+	                                                                           
+	        
+		                                                                           
+		 
+			                                                           
+			      
+		 
+	      
+	                                              
+	                                                                   
+	                                                             
+ 
+#endif
+
+void function BuildValidStatList()
+{
+	fileLevel.validStatList.clear()
+	foreach ( weapon, weaponConfig in fileLevel.weaponConfigMap )
+	{
+		foreach ( xpModifier in weaponConfig.xpModifierList )
+		{
+			fileLevel.validStatList.append( BuildPDefKey_XPModifierStat( weapon, xpModifier.index ) )
+		}
+
+		foreach ( trialConfig in weaponConfig.trialList )
+		{
+			fileLevel.validStatList.append( BuildPDefKey_TrialStat( weapon, trialConfig.tierLevel ) )
+		}
+
+		fileLevel.validStatList.append( weaponConfig.persistenceKey_XP )
+		fileLevel.validStatList.append( weaponConfig.persistenceKey_Level )
+	}
+}
+
+void function LoadConfig()
+{
+	fileLevel.weaponConfigMap.clear()
+	             
+	{
+		var masteryTrialsDataTable = GetDataTable( $"datatable/mastery/weapon_mastery_trials.rpak" )
+		int numRows                = GetDataTableRowCount( masteryTrialsDataTable )
+		int col_weaponName         = GetDataTableColumnByName( masteryTrialsDataTable, "weaponName" )
+		int col_tierLevel          = GetDataTableColumnByName( masteryTrialsDataTable, "tierLevel" )
+		int col_statBehavior       = GetDataTableColumnByName( masteryTrialsDataTable, "statBehavior" )
+		int col_statValidation     = GetDataTableColumnByName( masteryTrialsDataTable, "statValidation" )
+		int col_statParams         = GetDataTableColumnByName( masteryTrialsDataTable, "statParams" )
+		int col_goal               = GetDataTableColumnByName( masteryTrialsDataTable, "goal" )
+		int col_description        = GetDataTableColumnByName( masteryTrialsDataTable, "description" )
+		int col_name               = GetDataTableColumnByName( masteryTrialsDataTable, "name" )
+		for ( int rowIndex = 0; rowIndex < numRows; rowIndex++ )
+		{
+			                                      
+			string weaponName      = GetDataTableString( masteryTrialsDataTable, rowIndex, col_weaponName )
+			ItemFlavor trialWeapon = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( weaponName ) )
+			int tierLevel          = GetDataTableInt( masteryTrialsDataTable, rowIndex, col_tierLevel )
+			int goal               = GetDataTableInt( masteryTrialsDataTable, rowIndex, col_goal )
+			                  
+			string statBehavior    = GetDataTableString( masteryTrialsDataTable, rowIndex, col_statBehavior )
+			string statValidation  = GetDataTableString( masteryTrialsDataTable, rowIndex, col_statValidation )
+			string statParams      = GetDataTableString( masteryTrialsDataTable, rowIndex, col_statParams )
+			string description     = GetDataTableString( masteryTrialsDataTable, rowIndex, col_description )
+			string name            = GetDataTableString( masteryTrialsDataTable, rowIndex, col_name )
+			
+			TrialConfig trialConfig = AddTrial( trialWeapon, tierLevel, goal, statBehavior, statValidation, statParams )
+			#if CLIENT || UI
+				trialConfig.description = description
+				trialConfig.name = name
+			#endif
+
+			#if DEV
+				trialConfig.statParam = format( "%s %s %s", statBehavior, statValidation, statParams )
+			#endif
+
+			#if SERVER
+				                                                                                                
+			#endif
+		}
+	}
+
+	                   
+	{
+		var masteryXPDataTable   = GetDataTable( $"datatable/mastery/weapon_mastery_xp_modifier.rpak" )
+		int numRows              = GetDataTableRowCount( masteryXPDataTable )
+		int col_index            = GetDataTableColumnByName( masteryXPDataTable, "index" )
+		int col_action           = GetDataTableColumnByName( masteryXPDataTable, "action" )
+		int col_modifierType     = GetDataTableColumnByName( masteryXPDataTable, "modifierType" )
+		int col_description      = GetDataTableColumnByName( masteryXPDataTable, "description" )
+		int col_weight           = GetDataTableColumnByName( masteryXPDataTable, "weight" )
+		int col_nonBRWeight      = GetDataTableColumnByName( masteryXPDataTable, "nonBRWeight" )
+		int col_specialModifier  = GetDataTableColumnByName( masteryXPDataTable, "specialModifier" )
+		int col_statBehavior     = GetDataTableColumnByName( masteryXPDataTable, "statBehavior" )
+		int col_statValidation   = GetDataTableColumnByName( masteryXPDataTable, "statValidation" )
+		int col_statParams       = GetDataTableColumnByName( masteryXPDataTable, "statParams" )
+		int col_hideDebugInfo    = GetDataTableColumnByName( masteryXPDataTable, "hideDebugInfo" )
+		for ( int rowIndex = 0; rowIndex < numRows; rowIndex++ )
+		{
+			float weight           = GetDataTableFloat( masteryXPDataTable, rowIndex, col_weight )
+			float nonBRWeight      = GetDataTableFloat( masteryXPDataTable, rowIndex, col_nonBRWeight )
+			string specialModifier = GetDataTableString( masteryXPDataTable, rowIndex, col_specialModifier )
+			int index              = GetDataTableInt( masteryXPDataTable, rowIndex, col_index )
+			string statBehavior    = GetDataTableString( masteryXPDataTable, rowIndex, col_statBehavior )
+			string statValidation  = GetDataTableString( masteryXPDataTable, rowIndex, col_statValidation )
+			string statParams      = GetDataTableString( masteryXPDataTable, rowIndex, col_statParams )
+			bool hideDebugInfo     = GetDataTableBool( masteryXPDataTable, rowIndex, col_hideDebugInfo )
+			string action          = GetDataTableString( masteryXPDataTable, rowIndex, col_action )
+			string modifierType    = GetDataTableString( masteryXPDataTable, rowIndex, col_modifierType )
+
+			foreach ( ItemFlavor weapon in GetAllWeaponItemFlavors() )
+			{
+				XPModifierConfig xpModifierConfig = AddXPModifier( weapon, index, weight, nonBRWeight, specialModifier, statBehavior, statValidation, statParams )
+				                
+				xpModifierConfig.action = action
+				xpModifierConfig.modifierType = modifierType
+				#if CLIENT || UI
+					xpModifierConfig.actionText = GetActionTextFromTag( action )
+				#endif
+
+				#if DEV
+					xpModifierConfig.statParam = format( "%s %s %s", statBehavior, statValidation, statParams )
+					#if SERVER
+						                                                           
+					#endif
+				#endif
+
+				#if SERVER
+					                                                                                                  
+				#endif
+			}
+		}
+	}
+
+	                   
+	{
+		fileLevel.totalXPToCompleteLevel.clear()
+		var masteryXPProgressionDataTable = GetDataTable( $"datatable/mastery/weapon_mastery_xp_progression.rpak" )
+		int numRows                       = GetDataTableRowCount( masteryXPProgressionDataTable )
+		int col_displayLevel              = GetDataTableColumnByName( masteryXPProgressionDataTable, "displayLevel" )
+		int col_xpPerLevel                = GetDataTableColumnByName( masteryXPProgressionDataTable, "xpPerLevel" )
+		int prevlevel                     = 0
+		int cumulativeXP                  = 0
+
+		for ( int rowIndex = 0; rowIndex < numRows; rowIndex++ )
+		{
+			int displayLevel = GetDataTableInt( masteryXPProgressionDataTable, rowIndex, col_displayLevel )
+
+			if ( displayLevel > prevlevel )
+			{
+				int xpToCompleteLevel = GetDataTableInt( masteryXPProgressionDataTable, rowIndex, col_xpPerLevel )
+				cumulativeXP += xpToCompleteLevel
+				fileLevel.totalXPToCompleteLevel.append( cumulativeXP )
+				fileLevel.xpForBonusLevels = xpToCompleteLevel
+
+				prevlevel = displayLevel
+			}
+		}
+		fileLevel.weaponMaxLevel = prevlevel + 1
+		fileLevel.weaponMaxXP = Mastery_GetTotalXPToCompleteWeaponLevel( prevlevel )
+	}
+
+	                                
+	{
+		fileLevel.xpRankModifierConfig.clear()
+		var dataTable = GetDataTable( $"datatable/mastery/weapon_mastery_xp_rank_modifier.rpak" )
+		int numRows   = GetDataTableRowCount( dataTable )
+		for ( int rowIndex = 0; rowIndex < numRows; rowIndex++ )
+		{
+			RankWeightConfig rankWeightConfig
+			rankWeightConfig.placement		= GetDataTableInt( dataTable, rowIndex, GetDataTableColumnByName( dataTable, "placement" ) )
+			rankWeightConfig.weight			= GetDataTableInt( dataTable, rowIndex, GetDataTableColumnByName( dataTable, "weight" ) )
+			fileLevel.xpRankModifierConfig.append( rankWeightConfig )
+		}
+	}
+
+	                
+	{
+		var dataTable              = GetDataTable( $"datatable/mastery/weapon_mastery_trial_rewards.rpak" )
+		int numRows                = GetDataTableRowCount( dataTable )
+		int col_weaponName         = GetDataTableColumnByName( dataTable, "weaponName" )
+		int col_tierLevel          = GetDataTableColumnByName( dataTable, "tierLevel" )
+		int col_rewards            = GetDataTableColumnByName( dataTable, "rewards" )
+		int col_finalRewardType    = GetDataTableColumnByName( dataTable, "finalRewardType" )
+		int col_isAllWeaponRewards = GetDataTableColumnByName( dataTable, "isAllWeaponReward" )
+		int col_specialBadge       = GetDataTableColumnByName( dataTable, "specialBadge" )
+		for ( int rowIndex = 0; rowIndex < numRows; rowIndex++ )
+		{
+			string weaponName      = GetDataTableString( dataTable, rowIndex, col_weaponName )
+			int tierLevel          = GetDataTableInt( dataTable, rowIndex, col_tierLevel )
+			string rewards         = GetDataTableString( dataTable, rowIndex, col_rewards )
+			int finalRewardType    = GetDataTableInt( dataTable, rowIndex, col_finalRewardType )
+			bool isAllWeaponRewards = GetDataTableBool( dataTable, rowIndex, col_isAllWeaponRewards )
+			string specialBadge    = GetDataTableString( dataTable, rowIndex, col_specialBadge )
+
+			if ( finalRewardType == eFinalRewardType.Five )
+			{
+				ItemFlavor trialWeapon = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( weaponName ) )
+				                        
+				ParseRewards( fileLevel.weaponConfigMap[trialWeapon].finalRewardFive, rewards )
+			}
+			else if ( isAllWeaponRewards == true )
+			{
+				                     
+				ParseRewards( fileLevel.allWeaponRewards, rewards )
+			}
+			else
+			{
+				ItemFlavor trialWeapon = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( weaponName ) )
+				                       
+				TrialConfig trialConfig = fileLevel.weaponConfigMap[trialWeapon].tierTrialMap[tierLevel]
+				ParseRewards( trialConfig.rewards, rewards )
+				                                      
+				fileLevel.weaponConfigMap[trialWeapon].badgeTiers.append( trialConfig.tierLevel )
+				trialConfig.specialBadge = specialBadge == "" ? null : GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( specialBadge ) )
+				Assert( trialConfig.specialBadge == null || ItemFlavor_GetType( expect ItemFlavor( trialConfig.specialBadge ) ) == eItemType.gladiator_card_badge, "Special badge guid is invalid!" )
+			}
+		}
+	}
+	                        
+	foreach ( weapon, weaponConfig in fileLevel.weaponConfigMap )
+	{
+		weaponConfig.persistenceKey_XP = BuildPdefKey_WeaponStruct( weapon ) + PERSISTENCE_XP_SUFFIX
+		weaponConfig.persistenceKey_SopmXP = BuildPdefKey_WeaponStruct( weapon ) + PERSISTENCE_SOPM_XP_SUFFIX
+		weaponConfig.persistenceKey_Level = BuildPdefKey_WeaponStruct( weapon ) + PERSISTENCE_LEVEL_SUFFIX
+	}
+}
+
+                          
+#if SERVER
+       
+                                                                                                    
+ 
+	                                    
+		                                                             
+                   
+                                                                                                                                                  
+       
+ 
+      
+
+                                                         
+ 
+	                              
+		         
+	                                              
+	                             
+ 
+
+                                                                                          
+ 
+	                              
+		         
+	                                               
+		         
+	                             
+		         	
+	                                             
+	 
+		                                                                                       
+		         
+	 
+	                                                                          
+	                                            
+	                          
+	                                               
+		             
+	                                                                            
+	 
+		       
+			                                                   
+				                                                                                         
+		      
+		                                                                                         
+		 
+			                             
+		 
+	 
+	             
+ 
+
+                                                                                              
+ 
+	                              
+		      
+	                                                              
+	                                                            
+ 
+
+                                                                                                  
+ 
+	                              
+		      
+	                                               
+		      
+	                             
+		      
+	                                             
+	 
+		                                                                                       
+		      
+	 
+	                                                                 
+	                                             
+	 
+		                                                                                        
+		      
+	 
+
+	       
+		                                                   
+			                                                                                         
+	      
+	                                                                                                                                                                           
+	                                                                           
+
+	                                                                                                          
+	                                                                              
+
+	       
+                    
+                                     
+                                                                                                                                                                               
+       
+                                                                                       
+        
+	      
+
+	       
+		                                     
+	      
+			                                                                            
+
+	          
+	                                                      
+	 
+		                                                                                              
+		                                                                                   
+		                                                               
+	 
+
+	                                                                                                              
+	                                                                      
+ 
+#endif
+
+#if SERVER
+                                                                       
+ 
+	                                                                                                                                   
+	                                           
+ 
+#endif
+
+#if SERVER
+                                     
+ 
+	                              
+ 
+#endif
+
+                         
+array<TrialConfig> function GetJustUnlockedTrials( ItemFlavor weaponFlavor, int lastLevel, int currentLevel )
+{
+	array<TrialConfig> resultTrialList
+	foreach ( trialConfig in fileLevel.weaponConfigMap[weaponFlavor].trialList )
+	{
+		if ( !IsTrialUnlocked( lastLevel, trialConfig.tierLevel ) && IsTrialUnlocked( currentLevel, trialConfig.tierLevel ) )
+			resultTrialList.append( trialConfig )
+	}
+	return resultTrialList
+}
+
+int function GetXPRankModifierWeight( int placement )
+{
+	int lookupPlacement    = minint( fileLevel.xpRankModifierConfig.len() - 1, placement )
+	int csvValue           = fileLevel.xpRankModifierConfig[ lookupPlacement ].weight
+	return csvValue
+}
+
+int function CalculateXPSpecialModifier_PlacementBonus( int inputValue, int totalHeldTime, entity player, XPModifierConfig xpModifier, bool isBRMode )
+{
+	if ( !isBRMode )
+	{
+		return 0
+	}
+	if( totalHeldTime == 0 )
+	{
+		return 0
+	}
+	int rank = GetMatchRank( player )
+	int resultValue = int( GetXPRankModifierWeight( rank ) * (inputValue / float( totalHeldTime )) )
+	#if DEV
+		printf( "[Mastery] CalculateXPSpecialModifier_PlacementBonus, input:%d, rank:%d, totalHeldTime:%d, result:%d", inputValue, rank, totalHeldTime, resultValue )
+	#endif
+	return resultValue
+}
+
+int function CalculateXPSpecialModifier_Kill( int inputValue, XPModifierConfig xpModifier, bool isBRMode )
+{
+	float weight = isBRMode ? fileLevel.baseKillWeight : fileLevel.baseNonBRKillWeight
+	if ( xpModifier.specialModifier == eSpecialModifierType.Kill_Add )
+		weight += isBRMode ? xpModifier.weight : xpModifier.nonBRWeight
+	return int( inputValue * weight )
+}
+
+int function GetMatchRank( entity player )
+{
+	#if SERVER
+		                
+			                                                     
+		                                        
+	#else
+		return player.GetPersistentVarAsInt( "lastGameRank" )
+	#endif
+}
+
+void function ParseRewards( array<MasteryReward> rewardArray, string rewardString )
+{
+	array<string> pairs = split( rewardString, ";" )
+	foreach ( pairString in pairs )
+	{
+		array<string> pairKv = GetTrimmedSplitString( pairString, "," )
+		MasteryReward reward
+		reward.flav = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( pairKv[0] ) )
+		reward.quantity = pairKv.len() == 2 ? int( pairKv[1] ) : 1
+		rewardArray.append( reward )
+	}
+}
+
+int function Mastery_CalculateLevelFromXP( int xp )
+{
+	                        
+	Assert( xp >= 0, "XP " + xp + " too low" )
+	int levelIndex               = 0
+	array<int> xpToCompleteLevel = fileLevel.totalXPToCompleteLevel
+	for ( ; levelIndex < xpToCompleteLevel.len(); levelIndex ++ )
+	{
+		if ( xp < xpToCompleteLevel[levelIndex] )
+			return levelIndex + 1
+	}
+
+	int bonusXP = xp - xpToCompleteLevel[xpToCompleteLevel.len() - 1]
+
+	int xpForBonusLevels = fileLevel.xpForBonusLevels
+	return int( levelIndex + ceil( bonusXP / xpForBonusLevels ) ) + 1
+}
+
+int function Mastery_GetTotalXPToCompleteWeaponLevel( int level )                                
+{
+	int levelIndex = level - 1
+	Assert( levelIndex >= -1 )
+	if ( levelIndex == -1 )
+		return 0
+
+	array<int> totalXPToCompleteLevel = fileLevel.totalXPToCompleteLevel
+	int xpForBonusLevels              = fileLevel.xpForBonusLevels
+
+	if ( levelIndex < totalXPToCompleteLevel.len() )
+		return totalXPToCompleteLevel[levelIndex]
+
+	int numBonusLevels = 1 + (levelIndex - totalXPToCompleteLevel.len())
+	return totalXPToCompleteLevel[totalXPToCompleteLevel.len() - 1] + (numBonusLevels * xpForBonusLevels)
+}
+
+TrialConfig function AddTrial( ItemFlavor weapon, int tierLevel, int goal, string statBehavior, string statValidation, string statParams )
+{
+	if ( !(weapon in fileLevel.weaponConfigMap) )
+	{
+		MasteryWeaponConfig weaponConfig
+		fileLevel.weaponConfigMap[weapon] <- weaponConfig
+	}
+	TrialConfig trialConfig
+	trialConfig.statInstance = CreateStatInstance( ItemFlavor_GetGUID( weapon ), BuildPDefKey_TrialStat( weapon, tierLevel ), statBehavior, statValidation, statParams, eMasteryStatType.Trial )
+	#if DEV
+		trialConfig.statInstance.description = format( "<WEAPON:%s--TRIAL:LEVEL %d index[%d]>", DEV_GetWeaponName( weapon ), trialConfig.displayLevel, tierLevel )
+	#endif
+	  
+	trialConfig.tierLevel = tierLevel
+	trialConfig.displayLevel = ConvertTierLevelToDisplayLevel( tierLevel )
+	trialConfig.goal = goal
+	fileLevel.weaponConfigMap[weapon].trialList.append( trialConfig )
+	fileLevel.weaponConfigMap[weapon].tierTrialMap[tierLevel] <- trialConfig
+	return trialConfig
+}
+
+XPModifierConfig function AddXPModifier( ItemFlavor weapon, int index, float weight, float nonBRWeight, string specialModifier, string statBehavior, string statValidation, string statParams )
+{
+	if ( !(weapon in fileLevel.weaponConfigMap) )
+	{
+		MasteryWeaponConfig weaponConfig
+		fileLevel.weaponConfigMap[weapon] <- weaponConfig
+	}
+	XPModifierConfig xpModifierConfig
+	xpModifierConfig.statInstance = CreateStatInstance( ItemFlavor_GetGUID( weapon ), BuildPDefKey_XPModifierStat( weapon, index ), statBehavior, statValidation, statParams, eMasteryStatType.XPModifier )
+	#if DEV
+		xpModifierConfig.statInstance.description = format( "<WEAPON:%s--XP:index[%d]>", DEV_GetWeaponName( weapon ), index )
+	#endif
+	xpModifierConfig.weight = weight
+	xpModifierConfig.nonBRWeight = nonBRWeight
+	xpModifierConfig.index = index
+	if ( specialModifier in SPECIAL_MODIFIER_MAP )
+	{
+		xpModifierConfig.specialModifier = SPECIAL_MODIFIER_MAP[specialModifier]
+		if ( specialModifier == XP_SPECIAL_MODIFIER_KILL_BASE )
+		{
+			fileLevel.baseKillWeight = weight
+			fileLevel.baseNonBRKillWeight = nonBRWeight
+		}
+	}
+	fileLevel.weaponConfigMap[weapon].xpModifierList.append( xpModifierConfig )
+	return xpModifierConfig
+}
+
+StatInstance function CreateStatInstance( int targetTag, string pdefKey, string statBehavior, string statValidation, string statParams, int statType )
+{
+	StatInstance statInstance
+	statInstance.targetTag = targetTag
+	statInstance.persistenceKey = pdefKey
+	statInstance.statType = statType
+#if SERVER
+	                                                                           
+
+	                                                      
+	                                             
+
+	                                               
+		                                         
+	                                                          
+#endif
+	return statInstance
+}
+
+bool function IsTrialUnlocked( int weaponLevel, int trialLevel )
+{
+	return weaponLevel / LEVELS_UNLOCK_EACH_TRIAL > trialLevel                                                                                                                       
+}
+
+int function ConvertTierLevelToDisplayLevel( int tierLevel )
+{
+	return (tierLevel + 1) * LEVELS_UNLOCK_EACH_TRIAL
+}
+
+int function CalculateXPFromStatValue( int statValue, XPModifierConfig xpModifier, entity player, bool isBRMode )
+{
+	Assert( statValue >= 0, "[Mastery] xp stat value is below 0" )
+	if ( statValue == 0 )
+		return 0
+	if ( xpModifier.specialModifier == eSpecialModifierType.Kill_Base || xpModifier.specialModifier == eSpecialModifierType.Kill_Add )
+		return CalculateXPSpecialModifier_Kill( statValue, xpModifier, isBRMode )
+	float weight = isBRMode ? xpModifier.weight : xpModifier.nonBRWeight
+	return int( floor( statValue * weight ) )
+}
+
+string function BuildPDefKey_XPModifierStat( ItemFlavor weapon, int index )
+{
+	return BuildPdefKey_WeaponStruct( weapon ) + format( "%s[%d]", PERSISTENCE_XP_MODIFIER_LIST, index )
+}
+
+string function BuildPDefKey_TrialStat( ItemFlavor weapon, int tierLevel )
+{
+	return BuildPDefKey_TrialStruct( weapon, tierLevel ) + PERSISTENCE_STAT_SUFFIX
+}
+
+string function BuildPDefKey_TrialStruct( ItemFlavor weapon, int tierLevel )
+{
+	return BuildPdefKey_WeaponStruct( weapon ) + format( "%s[%d].",PERSISTENCE_TRIAL_LIST, tierLevel )
+}
+
+string function BuildPdefKey_WeaponStruct( ItemFlavor weapon )
+{
+	return format( "mastery_weapons[%s].", ItemFlavor_GetGUIDString( weapon ) )
+}
+
+bool function IsBRMode( entity player )
+{
+	string modeString
+	#if SERVER
+		                
+			                                                                       
+		                                    
+	#else
+		modeString = expect string( player.GetPersistentVar( "lastGameMode" ) )
+	#endif
+
+	if ( modeString == SURVIVAL )                    
+		return true
+
+                         
+	if ( modeString == GAMEMODE_HEATWAVE )
+		return true
+      
+
+	return false
+}
+
+int function GetTotalWeaponHeldTime( entity player )
+{
+	int totalTime = 0
+	foreach ( weapon, weaponConfig in fileLevel.weaponConfigMap )
+	{
+		foreach ( xpModifier in weaponConfig.xpModifierList )
+		{
+			if ( xpModifier.specialModifier == eSpecialModifierType.Rank )
+				totalTime += player.GetPersistentVarAsInt( xpModifier.statInstance.persistenceKey )
+		}
+	}
+	return totalTime
+}
+
+string function GetActionTextFromTag( string action )
+{
+	return format( "#MASTERY_XP_%s", action.toupper() )
+}
+
+int function GetTierFromBitfield( int bitfield )
+{
+	return bitfield & BADGE_TIER_BITMASK
+}
+
+int function GetLevelFromBitfield( int bitfield )
+{
+	return bitfield >> BADGE_LEVEL_OFFSET
+}
+
+int function SetTierToBitfield( int tier, int bitfield )
+{
+	return tier | ((bitfield >> BADGE_LEVEL_OFFSET) << BADGE_LEVEL_OFFSET)
+}
+
+int function SetLevelToBitfield( int level, int bitfield )
+{
+	return (bitfield & BADGE_TIER_BITMASK) | (level << BADGE_LEVEL_OFFSET)
+}
+
+int function CreateTierLevelBitfield( int tier, int level )
+{
+	return tier | (level << BADGE_LEVEL_OFFSET)
+}
+
+bool function IsTrialCompleted( entity player, ItemFlavor weapon, TrialConfig trialConfig )
+{
+	int currentStat = player.GetPersistentVarAsInt( BuildPDefKey_TrialStat( weapon, trialConfig.tierLevel ) )
+	return currentStat >= trialConfig.goal
+}
+                             
+#if ( CLIENT || UI ) && DEV
+void function DEV_TestGetSpecialInfo()
+{
+	array<MasteryWeapon_BaseQueryResult> allWeaponData
+	foreach ( ItemFlavor weapon in GetAllWeaponItemFlavors() )
+	{
+		MasteryWeapon_BaseQueryResult ornull baseData = Mastery_GetWeaponBaseData( weapon )
+		if ( baseData != null )
+			allWeaponData.append( expect MasteryWeapon_BaseQueryResult( baseData ) )
+	}
+	                         
+	allWeaponData.sort( int function( MasteryWeapon_BaseQueryResult a, MasteryWeapon_BaseQueryResult b ) {
+		if ( a.level < b.level )
+			return 1
+		if ( a.level > b.level )
+			return -1
+		return 0
+	} )
+	for( int i = 0; i < 3; i++ )
+	{
+		printf( "Top [%d] level weapon-%s", i+1, WeaponItemFlavor_GetClassname( allWeaponData[i].weapon ) )
+	}
+	                       
+	allWeaponData.sort( int function( MasteryWeapon_BaseQueryResult a, MasteryWeapon_BaseQueryResult b ) {
+		if( a.xp == b.xp )
+			return 0
+		if ( Mastery_GetWeaponXPPercentToNextLevel( a ) < Mastery_GetWeaponXPPercentToNextLevel( b ) )
+			return -1
+		if ( Mastery_GetWeaponXPPercentToNextLevel( a ) > Mastery_GetWeaponXPPercentToNextLevel( b ) )
+			return 1
+		return 0
+	} )
+	printf( "Next level up weapon-%s", WeaponItemFlavor_GetClassname( allWeaponData[0].weapon ) )
+}
+#endif
+
+#if CLIENT || UI
+float function Mastery_GetWeaponXPPercentToNextLevel( MasteryWeapon_BaseQueryResult weaponData )
+{
+	Assert( weaponData.level >= 1, "weapon level < 1" )
+	int levelStartXP = weaponData.level == 1 ? 0 : Mastery_GetTotalXPToCompleteWeaponLevel( weaponData.level - 1 )
+	int levelEndXP = Mastery_GetTotalXPToCompleteWeaponLevel( weaponData.level )
+	                                                                                                                 
+	  	             
+	  	           
+	  	                          
+	  	              
+	  	                                                                         
+	  	                 
+	return float( levelEndXP - weaponData.xp ) / float( levelEndXP - levelStartXP )
+}
+#endif
+
+#if CLIENT || UI
+MasteryWeapon_BaseQueryResult ornull function Mastery_GetWeaponBaseData( ItemFlavor weapon )
+{
+	if ( !(weapon in fileLevel.weaponConfigMap) )
+	{
+		#if DEV
+			printf( "[Mastery] Can't find request weapon:" + DEV_ItemFlavor_GetCleanedAssetPath( weapon ) )
+		#endif
+		return null
+	}
+	entity player = GetLocalClientPlayer()
+	MasteryWeapon_BaseQueryResult result
+	result.xp = player.GetPersistentVarAsInt( fileLevel.weaponConfigMap[weapon].persistenceKey_XP )
+	result.level = Mastery_CalculateLevelFromXP( result.xp )
+	result.weapon = weapon
+	return result
+}
+
+array<MasteryWeapon_TrialQueryResult> ornull function Mastery_GetWeaponTrialList( ItemFlavor weapon )
+{
+	if ( !(weapon in fileLevel.weaponConfigMap) )
+	{
+		#if DEV
+			printf( "[Mastery] Can't find request weapon:" + DEV_ItemFlavor_GetCleanedAssetPath( weapon ) )
+		#endif
+		return null
+	}
+	array<MasteryWeapon_TrialQueryResult> resultList
+	array<TrialConfig> trialConfigList = fileLevel.weaponConfigMap[weapon].trialList
+	array<MasteryTrialData> trialDataList = fileLevel.localPlayerInfo.weaponDataCache[weapon].trialList
+	for ( int i = 0; i < trialConfigList.len(); i++ )
+	{
+		MasteryWeapon_TrialQueryResult queryResult
+		queryResult.trialConfig = trialConfigList[i]
+		queryResult.trialData = trialDataList[i]
+
+		foreach( reward in queryResult.trialConfig.rewards )
+		{
+			MasteryReward masteryReward = clone( reward )
+			masteryReward.isOwned = queryResult.trialData.isCompleted
+			masteryReward.isTall = false
+			queryResult.rewards.append( masteryReward )
+		}
+
+		resultList.append( queryResult )
+	}
+	return resultList
+}
+
+                                                                                                                                                               
+array<MasteryWeapon_TrialQueryResult> ornull function Mastery_GetWeaponTrialListClonedTrialData( ItemFlavor weapon )
+{
+	if ( !(weapon in fileLevel.weaponConfigMap) )
+	{
+		#if DEV
+			printf( "[Mastery] Can't find request weapon:" + DEV_ItemFlavor_GetCleanedAssetPath( weapon ) )
+		#endif
+		return null
+	}
+	array<MasteryWeapon_TrialQueryResult> resultList
+	array<TrialConfig> trialConfigList = clone fileLevel.weaponConfigMap[weapon].trialList
+	array<MasteryTrialData> trialDataList = clone fileLevel.localPlayerInfo.weaponDataCache[weapon].trialList
+	for ( int i = 0; i < trialConfigList.len(); i++ )
+	{
+		MasteryWeapon_TrialQueryResult queryResult
+		queryResult.trialConfig = trialConfigList[i]
+
+		MasteryTrialData trialData
+		trialData.currentValue = trialDataList[i].currentValue
+		trialData.isUnlocked   = trialDataList[i].isUnlocked
+		trialData.isCompleted  = trialDataList[i].isCompleted
+		#if CLIENT && DEV
+			trialData.statInternalValue = trialDataList[i].statInternalValue
+			trialData.isStatUnlocked = trialDataList[i].isStatUnlocked
+		#endif
+		queryResult.trialData = trialData
+
+		foreach ( reward in queryResult.trialConfig.rewards )
+		{
+			MasteryReward masteryReward = clone( reward )
+			masteryReward.isOwned = queryResult.trialData.isCompleted
+			masteryReward.isTall = false
+			queryResult.rewards.append( masteryReward )
+		}
+
+		resultList.append( queryResult )
+	}
+	return resultList
+}
+
+MasteryWeapon_FinalRewardResult ornull function Mastery_GetWeaponFinalReward( ItemFlavor weapon, int rewardType )
+{
+	Assert( rewardType != eFinalRewardType.None && rewardType < eFinalRewardType.COUNT, "[Mastery] Weapon final reward type invalid, " + rewardType )
+	if ( !(weapon in fileLevel.weaponConfigMap) )
+	{
+		#if DEV
+			printf( "[Mastery] Can't find request weapon:" + DEV_ItemFlavor_GetCleanedAssetPath( weapon ) )
+		#endif
+		return null
+	}
+	MasteryWeapon_FinalRewardResult result
+	if ( rewardType == eFinalRewardType.Five )
+	{
+		int completedTrialCount               = 0
+		array<TrialConfig> trialConfigList    = fileLevel.weaponConfigMap[weapon].trialList
+		array<MasteryTrialData> trialDataList = fileLevel.localPlayerInfo.weaponDataCache[weapon].trialList
+		for ( int i = 0; i < trialConfigList.len(); i++ )
+		{
+			TrialConfig trialConfig    = trialConfigList[i]
+			MasteryTrialData trialData = trialDataList[i]
+			if ( trialConfig.tierLevel <= FINAL_REWARD_FIVE_INDEX )
+			{
+				if ( trialData.isCompleted )
+					completedTrialCount += 1
+			}
+		}
+		result.curVal = completedTrialCount
+		result.goalVal = FINAL_REWARD_FIVE_INDEX + 1
+		result.isCompleted = result.curVal == result.goalVal
+		result.rewards = fileLevel.weaponConfigMap[weapon].finalRewardFive
+	}
+	return result
+}
+
+MasteryWeapon_FinalRewardResult function Mastery_GetAllWeaponReward()
+{
+	MasteryWeapon_FinalRewardResult result
+	int finishedWeaponCount = 0
+	foreach( weapon, weaponConfig in fileLevel.weaponConfigMap )
+	{
+		int completedTrialCount               = 0
+		array<TrialConfig> trialConfigList    = fileLevel.weaponConfigMap[weapon].trialList
+		array<MasteryTrialData> trialDataList = fileLevel.localPlayerInfo.weaponDataCache[weapon].trialList
+		for ( int i = 0; i < trialConfigList.len(); i++ )
+		{
+			TrialConfig trialConfig    = trialConfigList[i]
+			MasteryTrialData trialData = trialDataList[i]
+			if ( trialData.isCompleted )
+				completedTrialCount += 1
+		}
+		if ( completedTrialCount == trialConfigList.len() )
+			finishedWeaponCount += 1
+	}
+	result.curVal = finishedWeaponCount
+	result.goalVal = fileLevel.weaponConfigMap.len()
+	result.rewards = fileLevel.allWeaponRewards
+	result.isCompleted = result.curVal == result.goalVal
+	return result
+}
+
+table<ItemFlavor, MasteryWeapon_MatchXPPerWeapon> function Mastery_GetPreviousMatchXPUpdates()
+{
+	table<ItemFlavor, MasteryWeapon_MatchXPPerWeapon> result
+	entity player = GetLocalClientPlayer()
+	if ( !IsValid( player ) )
+		return result
+	bool isBRMode = IsBRMode( player )
+	int totalHeldTime = GetTotalWeaponHeldTime( player )
+	foreach ( weapon, weaponConfig in fileLevel.weaponConfigMap )
+	{
+		int currentXP = player.GetPersistentVarAsInt( weaponConfig.persistenceKey_XP )
+		int lastXP    = player.GetPersistentVarAsInt( weaponConfig.persistenceKey_SopmXP )
+		if ( currentXP > lastXP )
+		{
+			MasteryWeapon_MatchXPPerWeapon matchXPPerWeapon
+			matchXPPerWeapon.currentXP = currentXP
+			matchXPPerWeapon.lastXP = lastXP
+			                          
+			int lastLevel = Mastery_CalculateLevelFromXP( lastXP )
+			int currentLevel = Mastery_CalculateLevelFromXP( currentXP )
+			foreach ( trialConfig in weaponConfig.trialList )
+			{
+				bool justUnlocked = (!IsTrialUnlocked( lastLevel, trialConfig.tierLevel )) && IsTrialUnlocked( currentLevel, trialConfig.tierLevel )
+				if ( justUnlocked )
+					matchXPPerWeapon.unlockTrialList.append( trialConfig )
+			}
+			                        
+			foreach ( xpModifier in weaponConfig.xpModifierList )
+			{
+				int statValue = player.GetPersistentVarAsInt( xpModifier.statInstance.persistenceKey )
+				if ( statValue > 0 )
+				{
+					int xpValue = CalculateXPFromStatValue( statValue, xpModifier, player, isBRMode )
+					AddXPComponent( matchXPPerWeapon, xpModifier, xpValue )
+					                      
+					if ( xpModifier.specialModifier == eSpecialModifierType.Rank )
+					{
+						int bonusXP = CalculateXPSpecialModifier_PlacementBonus( statValue, totalHeldTime, player, xpModifier, isBRMode )
+						if ( bonusXP > 0 )
+						{
+							AddXPComponent( matchXPPerWeapon, xpModifier, bonusXP, ACTION_PLACEMENT_BONUS )
+						}
+					}
+					  
+				}
+			}
+
+			result[weapon] <- matchXPPerWeapon
+		}
+	}
+	return result
+}
+
+void function AddXPComponent( MasteryWeapon_MatchXPPerWeapon matchXPPerWeapon, XPModifierConfig xpModifier, int xpValue, string actionTag = "" )
+{
+	MasteryWeapon_XPComponent xpComponent
+	xpComponent.xpValue = xpValue
+	xpComponent.xpModifierConfig = xpModifier
+	string action = actionTag == "" ? xpModifier.action : actionTag
+	string actionText = actionTag == "" ? xpModifier.actionText : GetActionTextFromTag( actionTag )
+	if ( !(action in matchXPPerWeapon.actionXPMap) )
+	{
+		MasteryWeapon_ActionXP actionXP
+		matchXPPerWeapon.actionXPMap[action] <- actionXP
+		matchXPPerWeapon.actionXPMap[action].actionText = actionText
+	}
+	matchXPPerWeapon.actionXPMap[action].xpValue += xpValue
+	matchXPPerWeapon.actionXPMap[action].xpComponentList.append( xpComponent )
+}
+
+
+table<ItemFlavor, MasteryWeapon_MatchTrialPerWeapon> function Mastery_GetPreviousMatchTrialUpdates()
+{
+	table<ItemFlavor, MasteryWeapon_MatchTrialPerWeapon> result
+	entity player = GetLocalClientPlayer()
+	if ( !IsValid( player ) )
+		return result
+	foreach ( weapon, weaponConfig in fileLevel.weaponConfigMap )
+	{
+		foreach ( trialConfig in weaponConfig.trialList )
+		{
+			int currentStat = player.GetPersistentVarAsInt( BuildPDefKey_TrialStat( weapon, trialConfig.tierLevel ) )
+			int lastStat    = player.GetPersistentVarAsInt( BuildPDefKey_TrialStruct( weapon, trialConfig.tierLevel ) + PERSISTENCE_SOPM_STAT_SUFFIX )
+			if ( currentStat > lastStat && lastStat < trialConfig.goal )                       
+			{
+				if ( !(weapon in result) )
+				{
+					MasteryWeapon_MatchTrialPerWeapon matchTrialPerWeapon
+					result[weapon] <- matchTrialPerWeapon
+				}
+				MasteryWeapon_ChangedTrial changedTrial
+				changedTrial.lastValue = lastStat
+				changedTrial.currentValue = minint( trialConfig.goal, currentStat )
+				changedTrial.lastFrac = float( changedTrial.lastValue ) /  float( trialConfig.goal )
+				changedTrial.currentFrac = float( changedTrial.currentValue) / float( trialConfig.goal )
+				changedTrial.trialConfig = trialConfig
+				changedTrial.isComplete = currentStat >= trialConfig.goal
+				result[weapon].changedTrialList.append( changedTrial )
+			}
+		}
+	}
+	return result
+}
+
+int function Mastery_GetWeaponXP( ItemFlavor weapon )
+{
+	entity player = GetLocalClientPlayer()
+	if ( !IsValid( player ) )
+		return 0
+
+	if ( !(weapon in fileLevel.weaponConfigMap) )
+	{
+		#if DEV
+			printf( "[Mastery] Can't find request weapon:" + DEV_ItemFlavor_GetCleanedAssetPath( weapon ) )
+		#endif
+		return 0
+	}
+
+	return player.GetPersistentVarAsInt( fileLevel.weaponConfigMap[weapon].persistenceKey_XP )
+}
+
+
+int function Mastery_GetWeaponLevel( ItemFlavor weapon )
+{
+	if ( !(weapon in fileLevel.weaponConfigMap) )
+	{
+		#if DEV
+			printf( "[Mastery] Can't find request weapon:" + DEV_ItemFlavor_GetCleanedAssetPath( weapon ) )
+		#endif
+		return 0
+	}
+
+	return Mastery_CalculateLevelFromXP( Mastery_GetWeaponXP( weapon ) )
+}
+
+int function Mastery_SortTrialQueryResult( MasteryWeapon_TrialQueryResult a, MasteryWeapon_TrialQueryResult b )
+{
+	if ( a.trialData.isCompleted && !b.trialData.isCompleted )
+		return 1
+
+	else if ( !a.trialData.isCompleted && b.trialData.isCompleted )
+		return -1
+
+	else if ( a.trialConfig.tierLevel < b.trialConfig.tierLevel )
+		return -1
+	else if ( b.trialConfig.tierLevel < a.trialConfig.tierLevel )
+		return 1
+
+	else if ( a.trialData.isUnlocked && !b.trialData.isUnlocked )
+		return -1
+
+	else if ( !a.trialData.isUnlocked && b.trialData.isUnlocked )
+		return 1
+
+	return 0
+}
+#endif
+
+                   
+#if SERVER
+                                                                                            
+                                                 
+ 
+	       
+		                                                                                            
+	      
+	                                         
+	                                          
+ 
+#endif
+
+#if SERVER
+                                         
+                                                       
+ 
+	                                
+	                                      
+
+	                                                     
+		      
+	                                  
+	 
+		                                                       
+	   
+	                                            
+
+	                                         
+		           
+
+	                
+	                                                                                                                                                         
+	  
+	                                                                    
+	                     
+	                                                       
+	  
+	                                                                                                       
+	                                                                                                                                              
+
+	  
+	                                 
+	                                                             
+	 
+		                                                                                        
+		                                                       
+		                                                                  
+		                                  
+		                            
+		                                                                             
+		                         
+		                                                 
+		 
+			                                                                                                         
+			                                                     
+			                                                                          
+			 
+				                     
+			 
+			                      
+			 
+				                             
+			 
+
+			                                                                                                                       
+			                     
+				        
+			                     
+			 
+				                                                       
+				 
+       
+					                                                    
+      
+					 
+						       
+							                                                                                                                                                                                              
+						     
+							                                                                                      
+						      
+						        
+					 
+				 
+
+				                           
+				                        
+				                                         
+				 
+					                             
+
+					                                            
+						        
+
+					                        
+					                     
+				 
+				                     
+					                                                          
+			 
+		 
+		                       
+		                    
+		 
+			                                                                                 
+			                      
+			 
+				                           
+				                                                                
+				 
+					                             
+
+					                                            
+						        
+
+					                        
+					                     
+				 
+				                     
+					                                                           
+			 
+		 
+
+		                        
+		 
+			                                                                                                                                                            
+			                                                                                         
+		 
+	 
+
+	                    
+	                            
+	 
+		                                                                                             
+		                                                                                        
+		                      
+		 
+			                            
+			                                                              
+			 
+				                             
+
+				                                            
+					        
+
+				                        
+			 
+			                        
+				                                                                                                                                                          
+		 
+	 
+ 
+
+                                                                   
+ 
+	                                                                                                                            
+		            
+
+	                                                    
+		            
+
+	                                                                        
+	 
+		                                                    
+			            
+	 
+	           
+ 
+#endif
+
+#if SERVER
+                                                                                                                                                  
+ 
+	       
+		                                                                                                               
+			                 
+			             
+			               
+			               
+	      
+	                         
+	 
+		                                                                   
+		      
+	 
+	                       
+	                                           
+	 
+		                             
+
+		                                                                      
+			        
+
+		                                                     
+			        
+
+		                                                                         
+		 
+			                                                     
+				        
+		 
+
+		                                       
+		                                              
+	 
+
+	                                
+	                                                               
+	                                                                                                                           
+	 
+		                                                                                                                                            
+	  
+	                                                                                 
+		                                                                             
+		                           
+			      
+
+		                                                             
+			                                          
+	  
+	                                      
+
+	                                          
+		           
+
+	                                                                 
+	 
+		                                                   
+	 
+ 
+#endif
+
+#if UI
+array<MasteryReward> function Mastery_GetMatchRewards()
+{
+	array<MasteryReward> rewards
+	int completeWeaponCount = 0
+	bool hasNewCompletedTrial = false
+	foreach ( weapon, weaponConfig in fileLevel.weaponConfigMap )
+	{
+		int completeTrialCount         = 0
+		int completedTrialCount_Five   = 0
+		bool hasNewCompletedTrial_Five = false
+		int weaponLevel                = GetPersistentVarAsInt( weaponConfig.persistenceKey_Level )
+		bool containSpecialBadge       = false
+		                                          
+		foreach ( TrialConfig trialConfig in weaponConfig.trialList )
+		{
+			int currentStat        = GetPersistentVarAsInt( BuildPDefKey_TrialStat( weapon, trialConfig.tierLevel ) )
+			int sopmStat           = GetPersistentVarAsInt( BuildPDefKey_TrialStruct( weapon, trialConfig.tierLevel ) + PERSISTENCE_SOPM_STAT_SUFFIX )
+			bool isRewardFiveTrial = trialConfig.tierLevel <= FINAL_REWARD_FIVE_INDEX
+			if ( currentStat >= trialConfig.goal )
+			{
+				completeTrialCount += 1
+				if ( isRewardFiveTrial )
+					completedTrialCount_Five += 1
+				if ( sopmStat < trialConfig.goal )
+				{
+					hasNewCompletedTrial = true
+					if ( isRewardFiveTrial )
+						hasNewCompletedTrial_Five = true
+					                
+					foreach ( reward in trialConfig.rewards )
+					{
+						if ( trialConfig.specialBadge == reward.flav )
+						{
+							if ( containSpecialBadge )
+								continue
+							containSpecialBadge = true
+							Assert( IsItemFlavorStructValid( ( expect ItemFlavor( trialConfig.specialBadge ) ).guid, eValidation.ASSERT ) )
+							Assert( ItemFlavor_GetGRXMode( expect ItemFlavor( trialConfig.specialBadge ) ) == eItemFlavorGRXMode.REGULAR )
+							MasteryReward masteryReward
+							masteryReward.flav = expect ItemFlavor( trialConfig.specialBadge )
+							masteryReward.quantity = 1
+							masteryReward.level = GRX_GetItemTier( ItemFlavor_GetGRXIndex( reward.flav ) ) - 2                                                                                                        
+							rewards.append( masteryReward )
+						}
+						else
+						{
+							rewards.append( reward )
+						}
+					}
+				}
+			}
+		}
+		                              
+		if ( ( completedTrialCount_Five >= FINAL_REWARD_FIVE_INDEX + 1 ) && hasNewCompletedTrial_Five )
+		{
+			foreach ( reward in weaponConfig.finalRewardFive )
+			{
+				rewards.append( reward )
+			}
+		}
+		                         
+		if ( completeTrialCount == weaponConfig.trialList.len() )
+		{
+			completeWeaponCount += 1
+		}
+	}
+	                    
+	if ( completeWeaponCount == fileLevel.weaponConfigMap.len() && hasNewCompletedTrial )
+	{
+		foreach ( reward in fileLevel.allWeaponRewards )
+		{
+			rewards.append( reward )
+		}
+	}
+	return rewards
+}
+
+bool function Mastery_DisplayMatchRewards()
+{
+	WaitEndFrame()
+
+	bool ready = GRX_IsInventoryReady() && GRX_AreOffersReady()
+	if ( !ready )
+		return false
+
+	array<MasteryReward> rewards = Mastery_GetMatchRewards()
+
+	if ( rewards.len() == 0 )
+	{
+		printf( "[Mastery] Request to show reward ceremony dialog but no rewards" )
+		return false
+	}
+	else
+	{
+		printf( "[Mastery] Show reward ceremony!" )
+	}
+
+	bool isForBattlePass = true
+	bool isForQuest = false
+
+	array<BattlePassReward> battlePassRewards
+	foreach ( reward in rewards )
+	{
+		BattlePassReward battlePassReward
+		battlePassReward.flav = reward.flav
+		battlePassReward.quantity = reward.quantity
+		battlePassReward.level = reward.level
+		battlePassRewards.append( battlePassReward )
+	}
+
+	ShowRewardCeremonyDialog(
+		"",
+		"MASTERY_REWARD_TITLE",
+		"",
+		battlePassRewards,
+		isForBattlePass,
+		isForQuest,
+		true,
+		true
+	)
+
+	return true
+}
+
+bool function Mastery_WeaponTrialsBecameUnlockedOrCompleted()
+{
+	entity player = GetLocalClientPlayer()
+	if ( !IsValid( player ) )
+		return false
+
+	                                                                      
+	foreach ( weapon, weaponConfig in fileLevel.weaponConfigMap )
+	{
+		foreach ( trialConfig in weaponConfig.trialList )
+		{
+			if ( DidWeaponTrialBecomeUnlocked( player, weaponConfig, trialConfig ) || DidWeaponTrialBecomeCompleted( player, weapon, trialConfig ) )
+				return true
+		}
+	}
+
+	return false
+}
+
+bool function DidWeaponTrialBecomeUnlocked( entity player, MasteryWeaponConfig weaponConfig, TrialConfig trialConfig )
+{
+	int currentXP         = player.GetPersistentVarAsInt( weaponConfig.persistenceKey_XP )
+	int lastXP            = player.GetPersistentVarAsInt( weaponConfig.persistenceKey_SopmXP )
+	bool trialWasUnlocked = false
+
+	if ( currentXP > lastXP )
+	{
+		int lastLevel    = Mastery_CalculateLevelFromXP( lastXP )
+		int currentLevel = Mastery_CalculateLevelFromXP( currentXP )
+		trialWasUnlocked = !IsTrialUnlocked( lastLevel, trialConfig.tierLevel ) && IsTrialUnlocked( currentLevel, trialConfig.tierLevel )
+	}
+
+	return trialWasUnlocked
+}
+
+bool function DidWeaponTrialBecomeCompleted( entity player, ItemFlavor weapon, TrialConfig trialConfig )
+{
+	int currentStat        = player.GetPersistentVarAsInt( BuildPDefKey_TrialStat( weapon, trialConfig.tierLevel ) )
+	int lastStat           = player.GetPersistentVarAsInt( BuildPDefKey_TrialStruct( weapon, trialConfig.tierLevel ) + PERSISTENCE_SOPM_STAT_SUFFIX )
+	bool trialWasCompleted = currentStat > lastStat && lastStat < trialConfig.goal && currentStat >= trialConfig.goal
+
+	return trialWasCompleted
+}
+
+array<MasteryWeapon_TrialStatusChangesPerWeapon> function Mastery_GetWeaponTrialStatusChanges()
+{
+	array<MasteryWeapon_TrialStatusChangesPerWeapon> result
+
+	entity player = GetLocalClientPlayer()
+	if ( !IsValid( player ) )
+		return result
+
+	foreach ( weapon, weaponConfig in fileLevel.weaponConfigMap )
+	{
+		MasteryWeapon_TrialStatusChangesPerWeapon newEntry
+		newEntry.weapon = weapon
+
+		array<MasteryWeapon_TrialQueryResult> ornull weaponTrialListState1 = Mastery_GetWeaponTrialListClonedTrialData( weapon )
+		array<MasteryWeapon_TrialQueryResult> ornull weaponTrialListState2 = Mastery_GetWeaponTrialList( weapon )
+		expect array<MasteryWeapon_TrialQueryResult>( weaponTrialListState1 )
+		expect array<MasteryWeapon_TrialQueryResult>( weaponTrialListState2 )
+
+		bool weaponHasTrialStatusChanges = false
+
+		foreach ( index, trialConfig in weaponConfig.trialList )
+		{
+			MasteryWeapon_TrialStatusChange statusChangeData
+			statusChangeData.state1 = weaponTrialListState1[index]
+
+			if ( DidWeaponTrialBecomeUnlocked( player, weaponConfig, trialConfig ) )
+			{
+				weaponHasTrialStatusChanges = true
+				statusChangeData.statusChange = eWeaponTrialStatusChangeType.UNLOCKED
+				statusChangeData.state1.trialData.isUnlocked = false
+				statusChangeData.state2 = weaponTrialListState2[index]
+			}
+			else if ( DidWeaponTrialBecomeCompleted( player, weapon, trialConfig ) )
+			{
+				weaponHasTrialStatusChanges = true
+				statusChangeData.statusChange = eWeaponTrialStatusChangeType.COMPLETED
+				statusChangeData.state1.trialData.isCompleted = false
+				statusChangeData.state1.trialData.currentValue = player.GetPersistentVarAsInt( BuildPDefKey_TrialStruct( weapon, trialConfig.tierLevel ) + PERSISTENCE_SOPM_STAT_SUFFIX )
+				statusChangeData.state2 = weaponTrialListState2[index]
+			}
+			else
+			{
+				statusChangeData.statusChange = eWeaponTrialStatusChangeType.NONE
+			}
+
+			newEntry.trialStatusChangeList.append( statusChangeData )
+		}
+
+		if ( weaponHasTrialStatusChanges )
+			result.append( newEntry )
+	}
+
+	return result
+}
+#endif
+
+                     
+#if SERVER
+                                      
+                                                        
+ 
+	                                
+	                                      
+
+	                                                  
+		      
+	                                  
+	 
+		                                                    
+	   
+	                                         
+
+	                                         
+		           
+
+	                                          
+	                                                             
+	 
+		                              
+		                                
+		                                                 
+		 
+			                                       
+			 
+				                                                                                                                                                         
+				                                                                                                                                                                                         
+				                                       
+				                                                                 
+				                 
+					                             
+			 
+		 
+
+		                                                                                               
+			        
+
+		                                                                                         
+		 
+			                                                                                   
+			                                                                                                                  
+			                                                 
+			                                                                                                
+
+			                                                                       
+
+			                                                                                                                               
+			 
+				                         
+				                                                   
+				                                   
+				                                       
+			 
+
+			       
+				                                             
+					                                                                                                                            
+				                                 
+				 
+					                                                                                                                                                                                         
+					                                
+						                                                                                                                                                                             
+				 
+			      
+		 
+	 
+
+	                                    
+		                                               
+ 
+#endif
+
+#if SERVER
+                                                                                     
+ 
+	                         
+		      
+
+	                   
+	                
+	                                     
+	 
+		                                                                                
+		                                                            
+		                                  
+	 
+
+	                                
+	                                                            
+	                                                                                      
+	 
+		                                                    
+		                                                                        
+	  
+	                                                                                   
+		                                                                             
+		                           
+			      
+
+		                               
+			                                                                        
+	  
+	                                             
+
+	                                          
+		           
+
+	                                                                 
+	 
+		                                                                     
+	 
+ 
+#endif
+
+#if SERVER
+                                                                       
+ 
+	                         
+		      
+
+	                                                                      
+
+	                                
+	                                                            
+	                                                                                  
+	 
+		                                                                      
+		                                                                                 
+	  
+	                                                                                
+		                                                                             
+		                           
+			      
+
+		                                           
+	  
+	                                                        
+	                                             
+
+	                                          
+		           
+
+	                                                                 
+	 
+		                                                                 
+	 
+ 
+#endif
+
+int function Mastery_GetStatValue( entity player, string statRef )
+{
+	if ( !fileLevel.isMasteryEnabled )
+		return 0
+	return player.GetPersistentVarAsInt( statRef )
+}
+
+bool function Mastery_IsValidStatRef( string statRef )
+{
+	if ( !fileLevel.isMasteryEnabled )
+		return true
+	if ( statRef == "" )
+		return false
+	#if ASSERTS
+		Assert( statRef.find( "said" ) == -1, "[Mastery] Badge stat ref for mastery should use upper case 'SAID', current: " + statRef )
+	#endif
+	return fileLevel.validStatList.contains( statRef )
+}
+
+bool function Mastery_DoesStatSatisfyValue( entity player, string statRef, float checkValue )
+{
+	if ( !fileLevel.isMasteryEnabled )
+		return false
+	Assert( float(int(checkValue)) == checkValue )
+	int value = Mastery_GetStatValue( player, statRef )
+	return (value >= int(checkValue))
+}
+
+#if UI && DEV
+void function DEV_PrintStatusChangeForAllTrials()
+{
+	entity player = GetLocalClientPlayer()
+
+	foreach ( weapon, weaponConfig in fileLevel.weaponConfigMap )
+	{
+		printt( Localize( ItemFlavor_GetLongName( weapon ) ) + ":" )
+
+		foreach ( index, trialConfig in weaponConfig.trialList )
+		{
+			string statusChange = "unchanged"
+			if ( DidWeaponTrialBecomeUnlocked( player, weaponConfig, trialConfig ) )
+				statusChange = "unlocked"
+			else if ( DidWeaponTrialBecomeCompleted( player, weapon, trialConfig ) )
+				statusChange = "completed"
+
+			printt( "    trial", index + ":", statusChange )
+		}
+	}
+}
+#endif
+
+bool function Mastery_IsEnabled()
+{
+	return GetCurrentPlaylistVarInt( "enable_mastery_weapon", 1 ) == 1
+}

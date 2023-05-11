@@ -1,0 +1,127 @@
+global function RefreshTabsSeasonalData
+
+global function AddCallback_OnSeasonalDataUpdated
+global function RemoveCallback_OnSeasonalDataUpdated
+global function GetSeasonStyle
+
+global struct SeasonStyleData
+{
+	bool  hasRefreshedOnce = false
+	asset seasonBannerLeftImage = $""
+	asset seasonBannerLogo = $""
+	asset seasonBannerLogoBg = $""
+	asset seasonBannerRightImage = $""
+
+	vector titleTextColor = <1.0, 1.0, 1.0>
+	vector headerTextColor = <1.0, 1.0, 1.0>
+	vector seasonColor = <1.0, 1.0, 1.0>
+	vector seasonNewColor = <1.0, 1.0, 1.0>
+
+	           
+	vector tabDefaultTextCol = <1.0, 1.0, 1.0>
+	vector tabFocusedTextCol = <1.0, 1.0, 1.0>
+	vector tabSelectedTextCol = <1.0, 1.0, 1.0>
+
+	vector tabFocusedBGCol = <1.0, 1.0, 1.0>
+	vector tabSelectedBGCol = <1.0, 1.0, 1.0>
+
+	vector tabFocusedBarCol = <1.0, 1.0, 1.0>
+	vector tabSelectedBarCol = <1.0, 1.0, 1.0>
+
+	vector tabGlowFocusedCol = <1.0, 1.0, 1.0>
+
+	         
+	vector subtabDefaultTextCol = <1.0, 1.0, 1.0>
+	vector subtabFocusedTextCol = <1.0, 1.0, 1.0>
+	vector subtabSelectedTextCol = <1.0, 1.0, 1.0>
+
+	vector subtabFocusedBGCol = <1.0, 1.0, 1.0>
+	vector subtabSelectedBGCol = <1.0, 1.0, 1.0>
+
+	vector subtabFocusedBarCol = <1.0, 1.0, 1.0>
+	vector subtabSelectedBarCol = <1.0, 1.0, 1.0>
+
+	vector subtabGlowFocusedCol = <1.0, 1.0, 1.0>
+}
+
+struct
+{
+	array<void functionref()> Callbacks_OnSeasonalDataUpdated
+
+	SeasonStyleData  seasonStyle
+} file
+
+void function RefreshTabsSeasonalData()
+{
+	thread function() : ()
+	{
+		while ( !IsFullyConnected() )
+			WaitFrame()
+
+		ItemFlavor ornull season = GetActiveSeason( GetUnixTimestamp() )
+
+		if( season == null )
+			return
+
+		expect ItemFlavor( season )
+
+		file.seasonStyle.seasonBannerLeftImage  = Season_GetLobbyBannerLeftImage( season )
+		file.seasonStyle.seasonBannerLogo       = Season_GetSmallLogo( season )
+		file.seasonStyle.seasonBannerLogoBg     = Season_GetSmallLogoBg( season )
+		file.seasonStyle.seasonBannerRightImage = Season_GetLobbyBannerRightImage( season )
+
+		         
+		file.seasonStyle.seasonNewColor  = Season_GetNewColor( season )
+		file.seasonStyle.seasonColor     = Season_GetColor( season )
+		file.seasonStyle.headerTextColor = Season_GetHeaderTextColor( season )
+		file.seasonStyle.titleTextColor  = Season_GetTitleTextColor( season )
+
+		           
+		file.seasonStyle.tabFocusedBGCol  = Season_GetTabBGFocusedCol( season )
+		file.seasonStyle.tabSelectedBGCol = Season_GetTabBGSelectedCol( season )
+
+		file.seasonStyle.tabFocusedBarCol  = Season_GetTabBarFocusedCol( season )
+		file.seasonStyle.tabSelectedBarCol = Season_GetTabBarSelectedCol( season )
+
+		file.seasonStyle.tabDefaultTextCol  = Season_GetTabTextDefaultCol( season )
+		file.seasonStyle.tabFocusedTextCol  = Season_GetTabTextFocusedCol( season )
+		file.seasonStyle.tabSelectedTextCol = Season_GetTabTextSelectedCol( season )
+
+		file.seasonStyle.tabGlowFocusedCol = Season_GetTabGlowFocusedCol( season )
+
+		          
+		file.seasonStyle.subtabFocusedBGCol  = Season_GetSubTabBGFocusedCol( season )
+		file.seasonStyle.subtabSelectedBGCol = Season_GetSubTabBGSelectedCol( season )
+
+		file.seasonStyle.subtabFocusedBarCol  = Season_GetSubTabBarFocusedCol( season )
+		file.seasonStyle.subtabSelectedBarCol = Season_GetSubTabBarSelectedCol( season )
+
+		file.seasonStyle.subtabDefaultTextCol  = Season_GetSubTabTextDefaultCol( season )
+		file.seasonStyle.subtabFocusedTextCol  = Season_GetSubTabTextFocusedCol( season )
+		file.seasonStyle.subtabSelectedTextCol = Season_GetSubTabTextSelectedCol( season )
+
+		file.seasonStyle.subtabGlowFocusedCol = Season_GetSubTabGlowFocusedCol( season )
+
+		file.seasonStyle.hasRefreshedOnce = true
+
+		foreach ( func in file.Callbacks_OnSeasonalDataUpdated )
+			func()
+	}()
+}
+
+void function AddCallback_OnSeasonalDataUpdated( void functionref() callbackFunc )
+{
+	Assert( !file.Callbacks_OnSeasonalDataUpdated.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnSeasonalDataUpdated" )
+	file.Callbacks_OnSeasonalDataUpdated.append( callbackFunc )
+}
+
+void function RemoveCallback_OnSeasonalDataUpdated( void functionref() callbackFunc )
+{
+	Assert( file.Callbacks_OnSeasonalDataUpdated.contains( callbackFunc ), "Callback " + string( callbackFunc ) + " doesn't exist" )
+	file.Callbacks_OnSeasonalDataUpdated.fastremovebyvalue( callbackFunc )
+}
+
+SeasonStyleData function GetSeasonStyle()
+{
+	return file.seasonStyle
+}

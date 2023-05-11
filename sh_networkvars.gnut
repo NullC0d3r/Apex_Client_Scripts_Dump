@@ -1,0 +1,294 @@
+untyped
+
+global function GetNetworkVar
+
+#if CLIENT
+global function RegisterNetVarBoolChangeCallback
+global function RegisterNetVarIntChangeCallback
+global function RegisterNetVarFloatChangeCallback
+global function RegisterNetVarTimeChangeCallback
+global function RegisterNetVarEntityChangeCallback
+
+global function ExecuteNetBufferedCallbacks
+global function ClientCodeCallback_IsNetworkReady
+#endif
+
+struct BufferedCallback
+{
+	string varName
+	entity player
+	var newValue
+	int callbackType
+}
+
+                                                                                 
+struct
+{
+#if CLIENT
+	table<string, array<void functionref(entity, bool )> >		_netVarBoolChangeCallbacks
+	table<string, array<void functionref(entity, int )> >		_netVarIntChangeCallbacks
+	table<string, array<void functionref(entity, float )> >		_netVarFloatChangeCallbacks
+	table<string, array<void functionref(entity, float )> >		_netVarTimeChangeCallbacks
+	table<string, array<void functionref(entity, entity )> >	_netVarEntityChangeCallbacks
+
+	array<BufferedCallback> _bufferedCallbacks
+#endif
+} file
+
+                                                                                   
+function GetNetworkVar( obj, varName )
+{
+	Assert( false )
+}
+
+
+#if CLIENT
+bool function ClientCodeCallback_IsNetworkReady()
+{
+	return IsNetVarCallbackAvailable()
+}
+
+bool function IsNetVarCallbackAvailable()
+{
+	if( !level.clientScriptInitialized )                                                               
+		return false
+
+	entity localPlayer = GetLocalClientPlayer()
+	if( !IsValid( localPlayer ) )                                                     
+		return false
+
+	return true
+}
+
+void function ExecuteNetBufferedCallbacks()
+{
+	foreach ( BufferedCallback buffered in file._bufferedCallbacks )
+	{
+		printt( FUNC_NAME(), "Run CB for:", buffered.varName )
+
+		switch ( buffered.callbackType )                              
+		{
+			case SNVT_BOOL:
+				ExecuteNetVarBoolChangeCallback( buffered.varName, buffered.player, expect bool(buffered.newValue) )
+				break
+			case SNVT_TIME:
+				ExecuteNetVarTimeChangeCallback( buffered.varName, buffered.player, expect float(buffered.newValue) )
+				break
+			case SNVT_INT:
+				ExecuteNetVarIntChangeCallback( buffered.varName, buffered.player, expect int(buffered.newValue) )
+				break
+			case SNVT_FLOAT_RANGE:
+				ExecuteNetVarFloatChangeCallback( buffered.varName, buffered.player, expect float(buffered.newValue) )
+				break
+			case SNVT_FLOAT_RANGE_OVER_TIME:
+				Assert( false, "Change callbacks are not implemented for type SNVT_FLOAT_RANGE_OVER_TIME" )
+				break
+			case SNVT_ENTITY:
+				ExecuteNetVarEntityChangeCallback( buffered.varName, buffered.player, expect entity(buffered.newValue) )
+				break
+			default:
+				Assert( false, "sh_networkvars must always have a type" )
+		}
+	}
+
+	file._bufferedCallbacks = []
+}
+
+void function RegisterBufferedCallback(	string varName, entity player, var newValue, int callbackType )
+{
+	BufferedCallback bufferedCallback
+	bufferedCallback.varName = varName
+	bufferedCallback.player = player
+	bufferedCallback.newValue = newValue
+	bufferedCallback.callbackType = callbackType
+
+	file._bufferedCallbacks.append( bufferedCallback )
+}
+
+bool function DoesCallbackRequireValidEntParam( string varName )
+{
+	int varCategory = GetNetworkedVariableCategory( varName )
+
+	bool isGlobalCategory = (varCategory == SNDC_GLOBAL) || (varCategory == SNDC_GLOBAL_NON_REWIND)
+	return !isGlobalCategory
+}
+
+bool function ShouldExecuteCallback( string varName, entity entParam )
+{
+	                                                                           
+	bool requireValidEnt = DoesCallbackRequireValidEntParam( varName )
+	if ( requireValidEnt && !IsValid( entParam ) )
+		return false
+
+	return true
+}
+
+                                                                                                                                    
+                                                                                                                                    
+  
+                                                                                                            
+                                                                                                            
+                                                                                                            
+                                                                                                            
+                                                                                                            
+                                                                                                            
+                                                                                                            
+  
+                                                                                                                                    
+                                                                                                                                    
+
+void function RegisterNetVarIntChangeCallback( string varName, void functionref( entity, int ) callbackFunc )
+{
+	if ( !(varName in file._netVarIntChangeCallbacks ) )
+	{
+		file._netVarIntChangeCallbacks[varName] <- []
+
+		RegisterNetworkedVariableChangeCallback_int_Internal( varName, void function( entity player, int newVal ) : (varName) {
+			if ( !IsNetVarCallbackAvailable() )
+			{
+				RegisterBufferedCallback( varName, player, newVal, SNVT_INT )
+				return
+			}
+
+			ExecuteNetVarIntChangeCallback( varName, player, newVal )
+		} )
+	}
+
+	file._netVarIntChangeCallbacks[varName].append(callbackFunc)
+}
+
+void function ExecuteNetVarIntChangeCallback( string varName, entity player, int newVal )
+{
+	if ( !ShouldExecuteCallback( varName, player ) )
+		return
+
+	foreach ( callbackFunc in file._netVarIntChangeCallbacks[varName] )
+	{
+		callbackFunc( player, newVal )
+	}
+}
+
+void function RegisterNetVarFloatChangeCallback( string varName, void functionref( entity, float ) callbackFunc )
+{
+	if ( !(varName in file._netVarFloatChangeCallbacks ) )
+	{
+		file._netVarFloatChangeCallbacks[varName] <- []
+
+		RegisterNetworkedVariableChangeCallback_float_Internal( varName, void function( entity player, float newVal ) : (varName) {
+			if ( !IsNetVarCallbackAvailable() )
+			{
+				RegisterBufferedCallback( varName, player, newVal, SNVT_FLOAT_RANGE )
+				return
+			}
+
+			ExecuteNetVarFloatChangeCallback( varName, player, newVal )
+		} )
+	}
+
+	file._netVarFloatChangeCallbacks[varName].append(callbackFunc)
+}
+
+void function ExecuteNetVarFloatChangeCallback( string varName, entity player, float newVal )
+{
+	if ( !ShouldExecuteCallback( varName, player ) )
+		return
+
+	foreach ( callbackFunc in file._netVarFloatChangeCallbacks[varName] )
+	{
+		callbackFunc( player, newVal )
+	}
+}
+
+void function RegisterNetVarTimeChangeCallback( string varName, void functionref( entity, float ) callbackFunc )
+{
+	if ( !(varName in file._netVarTimeChangeCallbacks ) )
+	{
+		file._netVarTimeChangeCallbacks[varName] <- []
+
+		RegisterNetworkedVariableChangeCallback_time_Internal( varName, void function( entity player, float newVal ) : (varName) {
+			if( !IsNetVarCallbackAvailable() )
+			{
+				RegisterBufferedCallback( varName, player, newVal, SNVT_TIME )
+				return
+			}
+
+			ExecuteNetVarTimeChangeCallback(varName, player, newVal )
+		} )
+	}
+
+	file._netVarTimeChangeCallbacks[varName].append(callbackFunc)
+}
+
+void function ExecuteNetVarTimeChangeCallback( string varName, entity player, float newVal )
+{
+	if ( !ShouldExecuteCallback( varName, player ) )
+		return
+
+	foreach ( callbackFunc in file._netVarTimeChangeCallbacks[varName] )
+	{
+		callbackFunc( player, newVal )
+	}
+}
+
+void function RegisterNetVarBoolChangeCallback( string varName, void functionref( entity, bool ) callbackFunc )
+{
+	if ( !(varName in file._netVarBoolChangeCallbacks ) )
+	{
+		file._netVarBoolChangeCallbacks[varName] <- []
+
+		RegisterNetworkedVariableChangeCallback_bool_Internal( varName, void function( entity player, bool newVal ) : (varName) {
+			if( !IsNetVarCallbackAvailable() )
+			{
+				RegisterBufferedCallback( varName, player, newVal, SNVT_BOOL )
+				return
+			}
+
+			ExecuteNetVarBoolChangeCallback( varName, player, newVal )
+		} )
+	}
+
+	file._netVarBoolChangeCallbacks[varName].append(callbackFunc)
+}
+
+void function ExecuteNetVarBoolChangeCallback( string varName, entity player, bool newVal )
+{
+	if ( !ShouldExecuteCallback( varName, player ) )
+		return
+
+	foreach ( callbackFunc in file._netVarBoolChangeCallbacks[varName] )
+	{
+		callbackFunc( player, newVal )
+	}
+}
+
+void function RegisterNetVarEntityChangeCallback( string varName, void functionref( entity, entity ) callbackFunc )
+{
+	if ( !(varName in file._netVarEntityChangeCallbacks ) )
+	{
+		file._netVarEntityChangeCallbacks[varName] <- []
+
+		RegisterNetworkedVariableChangeCallback_ent_Internal( varName, void function( entity player, entity newVal ) : (varName) {
+			if( !IsNetVarCallbackAvailable() )
+			{
+				RegisterBufferedCallback( varName, player, newVal, SNVT_ENTITY )
+				return
+			}
+
+			ExecuteNetVarEntityChangeCallback( varName, player, newVal )
+		} )
+	}
+
+	file._netVarEntityChangeCallbacks[varName].append(callbackFunc)
+}
+
+void function ExecuteNetVarEntityChangeCallback( string varName, entity player, entity newVal )
+{
+	if ( !ShouldExecuteCallback( varName, player ) )
+		return
+
+	foreach ( callbackFunc in file._netVarEntityChangeCallbacks[varName] )
+	{
+		callbackFunc( player, newVal )
+	}
+}
+#endif              
