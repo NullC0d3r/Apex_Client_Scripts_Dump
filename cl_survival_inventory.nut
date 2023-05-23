@@ -554,17 +554,9 @@ void function GroundAction( int lootAction, string guid, bool isAltAction, bool 
 		case eLootAction.PICKUP:
 		case eLootAction.EQUIP:
 		case eLootAction.SWAP:
+		case eLootAction.PICKUP_ALL:
 			RunUIScript( "SurvivalMenu_AckAction" )
 			Remote_ServerCallFunction( "ClientCallback_PickupSurvivalItem", lootEnt, extraFlags, deathBox )
-			break
-
-		case eLootAction.PICKUP_ALL:
-			if ( IsValid( lootEnt ) )
-			{
-				Remote_ServerCallFunction( "ClientCallback_PickupAllSurvivalItem ", lootEnt.GetSurvivalInt(), false )
-			}
-
-			Remote_ServerCallFunction( "ClientCallback_PickupSurvivalItem ", lootEnt, 0, deathBox )
 			break
 
 		case eLootAction.ATTACH_TO_ACTIVE:

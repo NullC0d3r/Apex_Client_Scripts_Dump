@@ -244,7 +244,7 @@ global enum eHighlightDrawFunc
        
 	LOS_LINE_ENTSONLYCONTENTSBLOCK                                                  
                                  
-                                                                              
+	LOS_LINE_ENTSONLY_BLOCKSCAN			                                               
        
 	ENT_APPEAR_EFFECT
 	BATTERY_THIEF
@@ -385,9 +385,9 @@ void function Highlight_Init()
 	HighlightContext_SetRadius( highlight, 1 )
 	HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_BLOODHOUND )
                                  
-                                                                                          
+	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.LOS_LINE_ENTSONLY_BLOCKSCAN )
       
-	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.ALWAYS )
+                                                                     
        
 	HighlightContext_SetADSFade( highlight, false )
 	HighlightContext_SetAfterPostProcess( highlight, false )
@@ -439,9 +439,9 @@ void function Highlight_Init()
 	HighlightContext_SetRadius( highlight, 2 )
 	HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_MOVEMENT_REVEALED )
                                  
-                                                                                          
+	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.LOS_LINE_ENTSONLY_BLOCKSCAN )
      
-	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.ABILITY_REVEAL )
+                                                                             
         
 	HighlightContext_SetADSFade( highlight, false )
 	HighlightContext_SetAfterPostProcess( highlight, false )
@@ -1867,14 +1867,14 @@ void function ClHighlight_UpdateHighlightFlags( entity ent, int contextId )
         
 
                                    
-                                                      
-   
-                                                                          
-                                                            
-                                     
-                                      
-   
-        
+		case eHighlightDrawFunc.LOS_LINE_ENTSONLY_BLOCKSCAN:
+		{
+			ent.Highlight_SetVisibilityType( HIGHLIGHT_VIS_LOS_ENTSONLY_BLOCKSCAN )
+			ent.Highlight_SetFlag( HIGHLIGHT_FLAG_CHECK_OFTEN, true )
+			ent.Highlight_SetFadeInTime( 0.0 )
+			ent.Highlight_SetFadeOutTime( 0.0 )
+		}
+			break
            
 
 		case eHighlightDrawFunc.ENT_APPEAR_EFFECT:

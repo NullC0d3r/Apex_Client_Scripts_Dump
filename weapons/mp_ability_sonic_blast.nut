@@ -695,7 +695,7 @@ var function OnWeaponTossReleaseAnimEvent_weapon_sonic_blast( entity weapon, Wea
 		                               
 		                                                          
                                    
-                                    
+			                                 
          
 	 
                                     
@@ -951,13 +951,13 @@ void function ServerToClient_ShowHealthRUI_Thread( entity owner, entity victim, 
 	{
 		bool phaseShifted = victim.IsPlayer() ? victim.IsPhaseShiftedOrPending() : false
                                    
-                                                                                                                  
+			bool scanBlocked = IsValid( owner ) && FerroWall_BlockScan( owner.EyePosition(), victim.GetWorldSpaceCenter() )
          
 
                                    
-                                     
+			if ( phaseShifted || scanBlocked )
        
-			if ( phaseShifted )
+                      
           
 		{
 			if ( visible )

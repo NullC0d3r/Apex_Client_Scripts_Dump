@@ -678,17 +678,17 @@ vector function GetProjectileVelocity_weapon_ferro_wall( entity projectile, floa
 bool function FerroWall_BlockScan( vector startPos, vector endPos )
 {
                                  
-                                                                                                                         
+	TraceResults traceResult = TraceLine( startPos, endPos, [], CONTENTS_BLOCKSCAN, TRACE_COLLISION_GROUP_NONE, null, true )
 
-                                             
+	bool retVal = ( traceResult.fraction < 1.0 )
 
-              
+	return retVal
      
-	entity ent = TraceGetTargetNameEntAlongLine( FERRO_WALL_SEGMENT_TARGET_NAME, startPos, endPos )
-	if ( IsValid( ent ) )
-		return ent.GetTargetName() == FERRO_WALL_SEGMENT_TARGET_NAME
+                                                                                                
+                      
+                                                              
 
-	return false
+             
        
 }
 
@@ -1049,9 +1049,9 @@ bool function FerroWall_BlockScan( vector startPos, vector endPos )
                                                                                                                                                                                                                                                                 
  
                                  
-                                                                                              
+	                                                                                             
      
-	                                                                        
+                                                                         
         
 	                                                                                                                         
 	                                                              

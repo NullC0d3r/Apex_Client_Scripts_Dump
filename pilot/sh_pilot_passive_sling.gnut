@@ -21,6 +21,7 @@ global function GetSlingPassiveRui
 global function CreateSlingPassiveRui_Internal
 global function DestroySlingPassiveRui
 global function ServerCallback_UpdateSlingWeaponIcon
+global function SlingSetIsGroundListMenuOpen
 #endif
 
 global const int SLING_WEAPON_SLOT = WEAPON_INVENTORY_SLOT_PRIMARY_4
@@ -392,6 +393,7 @@ void function UpdateSlingPassiveRui()
 	if ( IsValid( localViewPlayer ) )
 	{
 		RuiSetBool( file.slingPassiveRui, "isVisible", true )
+		RuiSetBool( file.slingPassiveRui, "isGroundListOpen", Survival_IsGroundlistOpen() )
 		RuiTrackFloat( file.slingPassiveRui, "bleedoutEndTime", localViewPlayer, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "bleedoutEndTime" ) )
 		RuiTrackFloat( file.slingPassiveRui, "reviveEndTime", localViewPlayer, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "reviveEndTime" ) )
 		RuiSetImage( file.slingPassiveRui, "weaponIcon", $"" )
@@ -428,6 +430,12 @@ void function UpdateSlingPassiveRui()
          
 		}
 	}
+}
+
+void function SlingSetIsGroundListMenuOpen()
+{
+	if ( file.slingPassiveRui != null )
+		RuiSetBool( file.slingPassiveRui, "isGroundListOpen", Survival_IsGroundlistOpen() )
 }
 
 void function ServerCallback_UpdateSlingWeaponIcon( string weaponRef, bool usesAmmoPool )

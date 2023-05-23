@@ -131,6 +131,7 @@ bool function OnWeaponChargeBegin_ability_phase_walk( entity weapon )
                                                                  
  
 	                             
+	                                           
 	                                         
 
 	                           

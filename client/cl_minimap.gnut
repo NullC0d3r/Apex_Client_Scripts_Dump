@@ -974,7 +974,7 @@ var function Minimap_CommonAdd( asset ruiAsset, int zOrder, vector objPos = < 0,
 	RuiSetVisible( rui, file.minimapEnabled)
 	file.minimapOtherRuis.append( rui )
 
-	if( file.trackedVehicleEntity != null )
+	if( IsValid( file.trackedVehicleEntity ) )
 	{
 		RuiTrackFloat3( rui, "playerPos", file.trackedVehicleEntity, RUI_TRACK_ABSORIGIN_FOLLOW )
 	}

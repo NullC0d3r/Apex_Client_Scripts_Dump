@@ -464,6 +464,11 @@ void function UIToClient_SurvivalGroundListOpened( var menu )
 
 	UIToClient_GroundlistOpened()
 
+                  
+		if ( DoesPlayerHaveWeaponSling( GetLocalViewPlayer() ) )
+			SlingSetIsGroundListMenuOpen()
+       
+
 	if ( deathBox.GetNetworkedClassName() == "prop_loot_grabber" )
 	{
                      
@@ -498,6 +503,11 @@ void function UIToClient_SurvivalGroundListClosed()
 	fileLevel.currentDeathBoxEEH = EncodedEHandle_null
 	DeathBoxListPanel_SetActive( fileLevel.listPanel, false )
 	UIToClient_GroundlistClosed()
+
+                  
+		if ( DoesPlayerHaveWeaponSling( GetLocalViewPlayer() ) )
+			SlingSetIsGroundListMenuOpen()
+       
 
 	WeaponStatusSetDeathBoxMenuOpen( false )
 }

@@ -663,7 +663,6 @@ void function SURVIVAL_Loot_InitShared()
 	RegisterSignal( "_SetPlayerInventory" )
 
 	                   
-	Remote_RegisterServerFunction( "ClientCallback_PickupAllSurvivalItem", "int", INT_MIN, INT_MAX, "bool" )
 	Remote_RegisterServerFunction( "ClientCallback_PickupSurvivalItem", "entity", "int", INT_MIN, INT_MAX, "entity" )
 	Remote_RegisterServerFunction( "ClientCallback_PickupSurvivalItem_UI", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX )
 

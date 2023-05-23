@@ -14,7 +14,6 @@ global function OnClientAnimEvent_DebuffZone
 global function CreateTargetingRui
 global function DestroyTargetingRui
 global function ServerCallback_CreateOverHeatIconRui
-global function GetTargetingRui
 global function DebuffZone_GetOverheatDuration
 #endif
 
@@ -215,7 +214,10 @@ void function OnWeaponDeactivate_DebuffZone( entity weapon )
 	player.Signal( "EndTargeting" )
 
 	#if CLIENT
-		if ( GetTargetingRui( player ) != null )
+		if( player != GetLocalViewPlayer() )
+			return
+
+		if ( file.targetingRui != null )
 		{
 			RuiSetBool( file.targetingRui, "isVisible", false )
 			RuiSetBool( file.targetingRui, "hasTarget", false )
@@ -231,7 +233,7 @@ void function OnWeaponTossPrep_DebuffZone( entity weapon, WeaponTossPrepParams p
 		return
 
 	#if CLIENT
-		if ( GetTargetingRui( player ) != null )
+		if ( file.targetingRui != null )
 		{
 			RuiSetBool( file.targetingRui, "isVisible", true )
 		}
@@ -277,7 +279,7 @@ var function OnWeaponToss_DebuffZone( entity weapon, WeaponPrimaryAttackParams a
 	#endif
 
 	#if CLIENT
-		if ( GetTargetingRui( weaponOwner ) != null )
+		if ( file.targetingRui != null )
 		{
 			RuiSetBool( file.targetingRui, "isVisible", false )
 			RuiSetBool( file.targetingRui, "hasTarget", false )
@@ -418,7 +420,7 @@ var function OnWeaponTossCancel_DebuffZone( entity weapon, WeaponPrimaryAttackPa
 	#endif
 
 	#if CLIENT
-		if ( GetTargetingRui( player ) != null )
+		if ( file.targetingRui != null )
 		{
 			RuiSetBool( file.targetingRui, "isVisible", false )
 			RuiSetBool( file.targetingRui, "hasTarget", false )
@@ -975,9 +977,16 @@ void function DebuffZone_OnPlayerOverheat( entity player, entity weapon )
 		                    
 	      
 
+	                             
+
 	                                                            
 	                       
+	 
 		                                      
+		                             
+	 
+
+
 
 	                                                                                                                                                                                                          
 	                                     
@@ -1013,14 +1022,21 @@ void function DebuffZone_OnPlayerOverheat( entity player, entity weapon )
 				                                                  
 		 
 	 
-
 	                       
 
 	                   
 
 	                                                                                         
-	                                                                                                       
-	                                                                                              
+
+	                                
+	 
+		                                                                                                 
+		                                                                                        
+	 
+	    
+	 
+		                                                                            
+	 
 
 
 	                                                                                                                  
@@ -1295,11 +1311,6 @@ void function DestroyTargetingRui( entity player )
 	}
 }
 
-var function GetTargetingRui( entity player )
-{
-	return file.targetingRui
-}
-
 void function CreateTacticalTargetingFX( entity player )
 {
 	EndSignal( player, "OnDeath", "OnDestroy", "EndTargeting" )
@@ -1329,7 +1340,7 @@ void function CreateTacticalTargetingFX( entity player )
 
 void function SetHasTargetForTargetingRui( entity player, bool hasTarget )
 {
-	if ( GetTargetingRui( player ) != null )
+	if (file.targetingRui  != null )
 	{
 		RuiSetBool( file.targetingRui, "hasTarget", hasTarget )
 	}

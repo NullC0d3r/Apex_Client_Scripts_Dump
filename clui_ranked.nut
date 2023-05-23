@@ -192,7 +192,7 @@ void function SetRankedIcon( int score, int ladderPos )
 		SharedRankedDivisionData data = GetCurrentRankedDivisionFromScoreAndLadderPosition( score, ladderPos )
 		PopulateRuiWithRankedBadgeDetails( rui, score, ladderPos )
 
-		RuiSetInt( rui, "inMatchRankScoreProgress", ( -1 * Ranked_GetCostForEntry() ) )
+		RuiTrackInt( rui, "inMatchRankScoreProgress", lcPlayer, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "inMatchRankScoreProgress" ) )
 	}
 	else
 	{

@@ -517,7 +517,20 @@ bool function TrySwapEquipment( int action, entity pickup, entity player, int pi
 			}
 			else
 			{
+				#if SERVER
+                      
+						                                                   
+           
+				#endif
+
 				pickedUp = SwapMainWeapon( pickup, player, pickupFlags, deathBox )
+
+				#if SERVER
+                      
+						                                                                                         
+							                                        
+           
+				#endif
 			}
 		}
 	}
